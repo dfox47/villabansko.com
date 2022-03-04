@@ -1,0 +1,7 @@
+AuthType Basic
+AuthName "No time for you!"
+AuthUserFile /home/c/cg27881/villabansko.com/public_html/administrator/.htpasswd
+Require valid-user
+<Files .htpasswd>
+	deny from all  #запрет доступа из браузера к .htpasswd
+</Files>
