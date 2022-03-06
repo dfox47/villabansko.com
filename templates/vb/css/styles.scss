@@ -1,122 +1,17 @@
 @charset "utf-8";
-/* CSS Dosument */
-/* Powered by foxartbox / info@foxartbox.com */
+// SCSS Document
+// Powered by foxartbox / info@foxartbox.com
 
-/* 
-	* Elements hierarchy:
-		* Standart class
-		* ID
-		* Other classes
-		* Different screen sizes
-*/
 
-@import (less) "font-awesome.css";
-@import (less) "jquery-ui_1.12.1.css";
+// should be 1st
+@import "vars";
 
-@color_blue_light2:			#109b96;
-@color_blue_light_text:		#009fe2;
-@color_grey_bg:				#595959; /* rgba(0,0,0, .65) */
-@color_grey_border:			#ccc;
-@color_grey_dark:			#777;
-@color_grey_input_bg:		#f2f2f2;
-@color_grey_light_text:		#999;
-@color_violent_logo:		#9d66a8;
-@color_yellow:				#e6a902;
+@import "font-awesome";
+@import "jquery-ui_1.12.1";
 
-@font_main:						'gotham_light', Arial, Helvetica, sans-serif;
-@font_gotham_black:				'gotham_black', Arial, Helvetica, sans-serif;
-@font_gotham_bold:				'gotham_bold', Arial, Helvetica, sans-serif;
-@font_gotham_light:				'gotham_light', Arial, Helvetica, sans-serif;
-@font_gotham_med:				'gotham_med', Arial, Helvetica, sans-serif;
-@font_gotham_reg:				'gotham_reg', Arial, Helvetica, sans-serif;
-@font_oranienbaum_reg:			'oranienbaum_reg', Arial, Helvetica, sans-serif;
-@font_pfdin_italic:				'pfdin_italic', Arial, Helvetica, sans-serif;
-@font_pfdin_light:				'pfdin_light', Arial, Helvetica, sans-serif;
-@font_pfdin_light_italic:		'pfdin_light_italic', Arial, Helvetica, sans-serif;
 
-@font-face {
-	font-family: 'gotham_black';
-	src: url('/fonts/gotham_black.eot');
-	src: url('/fonts/gotham_black.eot?#iefix')format("embedded-opentype"),
-		 url('/fonts/gotham_black.woff') format("woff"),
-		 url('/fonts/gotham_black.ttf') format("truetype");
-	font-style: normal;
-	font-weight: normal;
-}
-@font-face {
-	font-family: 'gotham_bold';
-	src: url('/fonts/gotham_bold.eot');
-	src: url('/fonts/gotham_bold.eot?#iefix')format("embedded-opentype"),
-		 url('/fonts/gotham_bold.woff') format("woff"),
-		 url('/fonts/gotham_bold.ttf') format("truetype");
-	font-style: normal;
-	font-weight: normal;
-}
-@font-face {
-	font-family: 'gotham_light';
-	src: url('/fonts/gotham_light.eot');
-	src: url('/fonts/gotham_light.eot?#iefix')format("embedded-opentype"),
-		 url('/fonts/gotham_light.woff') format("woff"),
-		 url('/fonts/gotham_light.ttf') format("truetype");
-	font-style: normal;
-	font-weight: normal;
-}
-@font-face {
-	font-family: 'gotham_med';
-	src: url('/fonts/gotham_med.eot');
-	src: url('/fonts/gotham_med.eot?#iefix')format("embedded-opentype"),
-		 url('/fonts/gotham_med.woff') format("woff"),
-		 url('/fonts/gotham_med.ttf') format("truetype");
-	font-style: normal;
-	font-weight: normal;
-}
-@font-face {
-	font-family: 'gotham_reg';
-	src: url('/fonts/gotham_reg.eot');
-	src: url('/fonts/gotham_reg.eot?#iefix')format("embedded-opentype"),
-		 url('/fonts/gotham_reg.woff') format("woff"),
-		 url('/fonts/gotham_reg.ttf') format("truetype");
-	font-style: normal;
-	font-weight: normal;
-}
-@font-face {
-	font-family: 'oranienbaum_reg';
-	src: url('/fonts/oranienbaum_reg.eot');
-	src: url('/fonts/oranienbaum_reg.eot?#iefix')format("embedded-opentype"),
-		 url('/fonts/oranienbaum_reg.woff') format("woff"),
-		 url('/fonts/oranienbaum_reg.ttf') format("truetype");
-	font-style: normal;
-	font-weight: normal;
-}
-@font-face {
-	font-family: 'pfdin_italic';
-	src: url('/fonts/pfdin_italic.eot');
-	src: url('/fonts/pfdin_italic.eot?#iefix')format("embedded-opentype"),
-		 url('/fonts/pfdin_italic.woff') format("woff"),
-		 url('/fonts/pfdin_italic.ttf') format("truetype");
-	font-style: normal;
-	font-weight: normal;
-}
-@font-face {
-	font-family: 'pfdin_light';
-	src: url('/fonts/pfdin_light.eot');
-	src: url('/fonts/pfdin_light.eot?#iefix')format("embedded-opentype"),
-		 url('/fonts/pfdin_light.woff') format("woff"),
-		 url('/fonts/pfdin_light.ttf') format("truetype");
-	font-style: normal;
-	font-weight: normal;
-}
-@font-face {
-	font-family: 'pfdin_light_italic';
-	src: url('/fonts/pfdin_light_italic.eot');
-	src: url('/fonts/pfdin_light_italic.eot?#iefix')format("embedded-opentype"),
-		 url('/fonts/pfdin_light_italic.woff') format("woff"),
-		 url('/fonts/pfdin_light_italic.ttf') format("truetype");
-	font-style: normal;
-	font-weight: normal;
-}
 
-/*** Standart class [START] ***/
+// Standart class [START]
 * {
 	border: 0 none;
 	box-sizing: border-box;
@@ -135,7 +30,7 @@
 
 a {
 	text-decoration: underline;
-	transition: all .3s ease-in-out;
+	transition: $transition;
 
 	&:hover {
 		text-decoration: none;
@@ -143,19 +38,20 @@ a {
 }
 
 body {
-	color: @color_grey_dark;
+	color: $c_grey_dark;
 	font-size: 10px;
-	font-family: @font_main;
-	line-height: 1.2em;
+	font-family: $font_main;
+	line-height: 1.2;
 	margin: 0 auto;
 	min-height: 100%;
 	overflow-x: hidden;
 	padding: 0;
 	position: relative;
+	z-index: 1;
 }
 
 h1 {
-	font-family: @font_oranienbaum_reg;
+	font-family: $font_oranienbaum_reg;
 	font-size: 4em;
 	font-style: normal;
 	font-weight: normal;
@@ -165,13 +61,14 @@ h1 {
 	text-indent: 0;
 	text-transform: uppercase;
 }
+
 h2 {
-	color: @color_grey_bg;
-	font-family: @font_oranienbaum_reg;
+	color: $c_grey_bg;
+	font-family: $font_oranienbaum_reg;
 	font-size: 4em;
 	font-style: normal;
 	font-weight: normal;
-	line-height: 1.4em;
+	line-height: 1.4;
 	margin: 0 0 1em;
 	padding: 0;
 	text-align: center;
@@ -180,10 +77,10 @@ h2 {
 }
 
 html {
-	color: @color_grey_dark;
+	color: $c_grey_dark;
 	font-size: 10px;
-	font-family: @font_main;
-	line-height: 1.2em;
+	font-family: $font_main;
+	line-height: 1.2;
 	margin: 0 auto;
 	min-height: 100%;
 	overflow-x: hidden;
@@ -207,18 +104,18 @@ img {
 input {
 	background-color: #fff;
 	border: 0 none;
-	color: @color_grey_dark;
+	color: $c_grey_dark;
 	font-size: 1.4em;
 	font-style: normal;
 	font-weight: 100;
 	padding: 1.4em 2em;
 
 	&[type='submit'] {
-		background-color: @color_grey_bg;
+		background-color: $c_grey_bg;
 		color: #fff;
 		cursor: pointer;
 		font-style: normal;
-		transition: all .3s ease-in-out;
+		transition: $transition;
 
 		&:hover {
 			background-color: #000;
@@ -245,7 +142,7 @@ table {
 
 textarea {
 	border: 0 none;
-	color: @color_grey_dark;
+	color: $c_grey_dark;
 	font-size: 1.4em;
 	font-style: normal;
 	font-weight: 100;
@@ -261,19 +158,29 @@ td {
 ul {
 	list-style: outside none none;
 }
-/*** Standart class [END] ***/
+// Standart class [END]
 
-/*** ID [START] ***/
-#system-message-container {}
+
+
+// ID [START]
+#block_1 {}
+
+#block_contacts {}
+
+#block_feedback {}
+
+#block_reviews {}
+
+#block_villas {}
 
 #ui-datepicker-div {
 	font-size: 2em;
 }
-/*** ID [END] ***/
+// ID [END]
 
 
 
-/*** help classes [START] ***/
+// help classes [START]
 .absolute {
 	position: absolute;
 }
@@ -289,12 +196,17 @@ ul {
 	}
 }
 
+.black {
+	color: #000;
+}
+
 .block {
-	border-bottom: 1px solid rgba(0,0,0, .5);
+	border-bottom: 1px solid $c_grey_border;
 	min-height: 600px;
 	overflow: hidden;
-	padding: 5em 0;
+	padding: 9em 16px;
 	position: relative;
+	z-index: 5;
 
 	&.block_1 {
 		border-bottom: 0 none;
@@ -311,10 +223,13 @@ ul {
 	position: absolute;
 	top: 0;
 	width: 100%;
-	z-index: 50;
+	z-index: 5;
 
 	img {
+		bottom: 0;
 		display: block;
+		left: 0;
+		position: absolute;
 		width: 100%;
 	}
 }
@@ -324,17 +239,17 @@ ul {
 	position: relative;
 	text-align: center;
 	width: 100%;
-	z-index: 100;
+	z-index: 7;
 }
 .block_1_down {
 	bottom: -40px;
-	color: @color_grey_bg;
+	color: $c_grey_bg;
 	font-size: 2em;
 	left: 0;
 	position: absolute;
 	text-align: center;
 	width: 100%;
-	z-index: 150;
+	z-index: 8;
 
 	span {
 		background-color: rgba(255,255,255, .7);
@@ -352,38 +267,54 @@ ul {
 		margin: .2em 0 0;
 	}
 }
+.block_1__link,
+.block_1__link:visited {
+	bottom: 1em;
+	color: $c_grey_dark;
+	display: inline-block;
+	font-size: 12px;
+	position: absolute;
+	right: 1em;
+	text-transform: uppercase;
+	z-index: 11;
+}
 .block_1_order {
-	background-color: @color_grey_bg;
+	/* background-color: $c_grey_bg; */
+	background-color: rgba(0,0,0, .99);
+	border: 1px solid #000;
 	color: #fff;
 	cursor: pointer;
 	display: inline-block;
 	font-size: 1.4em;
 	letter-spacing: .2em;
 	margin: 0 0 .5em;
-	padding: 1.8em 3.6em;
+	max-width: 220px;
+	padding: 1.8em 2em;
 	text-transform: uppercase;
-	transition: all .3s ease-in-out;
+	transition: $transition;
 
 	&:hover {
-		background-color: #000;
+		background-color: #fff;
+		color: #000;
 	}
 }
 .block_1_order_desc {
 	color: #000;
-	font-family: @font_gotham_med;
+	font-family: $font_gotham_med;
 	letter-spacing: .3em;
 	text-transform: uppercase;
 }
 .block_1_slogan {
 	color: #000;
-	font-family: @font_gotham_reg;
+	font-family: $font_gotham_reg;
 	font-size: 2.2em;
 	margin: 0 0 2em;
 	text-transform: uppercase;
 }
 .block_1_title {
-	color: @color_grey_bg;
-	font-family: @font_gotham_bold;
+	/* color: $c_grey_bg; */
+	color: #000;
+	font-family: $font_gotham_bold;
 	font-size: 3.4em;
 	margin: 0 0 .8em;
 	text-transform: uppercase;
@@ -414,26 +345,31 @@ ul {
 }
 .block_feedback_content {
 	position: relative;
-	z-index: 100;
+	z-index: 1;
 }
 
-.block_items {}
-.block_items_desc {
-	background-color: @color_grey_bg;
+.block_video {
+	text-align: center;
+}
+.block_video_content {}
+
+.block_villas {}
+.block_villas_desc {
+	background-color: $c_grey_bg;
 	display: block;
-	font-family: @font_gotham_reg;
+	font-family: $font_gotham_reg;
 	font-size: 13px;
 	letter-spacing: .2em;
 	padding: 1.6em 0;
 	text-align: center;
 	text-transform: uppercase;
-	transition: all .3s ease-in-out;
+	transition: $transition;
 
 	&:hover {
 		background-color: #000;
 	}
 }
-.block_items_img {
+.block_villas_img {
 	background-color: #ccc;
 	display: block;
 	height: 150px;
@@ -451,12 +387,30 @@ ul {
 		width: 100%;
 	}
 }
-.block_items_links {
+
+.block_villas_links {
 	display: inline-block;
 	vertical-align: middle;
 	width: 66%;
 }
-.block_items_prices {
+.block_villas_links_horizontal {
+	.block_villas_img {
+		img {
+			height: auto;
+			width: 100%;
+		}
+	}
+}
+.block_villas_links_vertical {
+	.block_villas_img {
+		img {
+			height: 100%;
+			width: auto;
+		}
+	}
+}
+
+.block_villas_prices {
 	display: inline-block;
 	font-size: 10px;
 	padding: 0 0 0 3em;
@@ -465,8 +419,8 @@ ul {
 	vertical-align: middle;
 	width: 34%;
 }
-.block_items_prices_desc {
-	font-family: @font_gotham_reg;
+.block_villas_prices_desc {
+	font-family: $font_gotham_reg;
 	font-size: 1.4em;
 	letter-spacing: .2em;
 	line-height: 1.4em;
@@ -476,13 +430,13 @@ ul {
 		margin: 0;
 	}
 }
-.block_items_prices_title {
+.block_villas_prices_title {
 	font-size: 2.6em;
-	font-family: @font_oranienbaum_reg;
+	font-family: $font_oranienbaum_reg;
 	letter-spacing: .2em;
 	margin: 0 0 .5em;
 }
-.block_items_wrap {
+.block_villas_wrap {
 	font-size: 0;
 
 	a,
@@ -491,6 +445,7 @@ ul {
 		color: #fff;
 		text-decoration: none;
 		padding: 16px;
+		vertical-align: top;
 		width: 50%;
 	}
 }
@@ -520,8 +475,7 @@ ul {
 	}
 }
 .block_reviews_content {
-	position: relative;
-	z-index: 100;
+	z-index: 1;
 }
 
 .breadcrumbs {
@@ -531,7 +485,7 @@ ul {
 
 	a,
 	a:visited {
-		color: @color_grey_bg;
+		color: $c_grey_bg;
 
 		span {
 			text-transform: none;
@@ -548,6 +502,28 @@ ul {
 
 	.fa {
 		margin: 0 1em;
+	}
+}
+
+.bt_play {
+	background: rgba(0,0,0, .7);
+	border-radius: 4px;
+	color: #fff;
+	cursor: pointer;
+	display: block;
+	font-size: 2em;
+	left: 50%;
+	line-height: 2em;
+	margin: -1em 0 0 -1.5em;
+	padding: 0 1em;
+	position: absolute;
+	text-align: center;
+	top: 50%;
+	transition: all 1.3s ease-in-out;
+	z-index: 999;
+
+	.fa {
+		vertical-align: middle;
 	}
 }
 
@@ -587,7 +563,7 @@ ul {
 
 	> a,
 	> a:visited {
-		border: 1px solid @color_grey_bg;
+		border: 1px solid $c_grey_bg;
 		color: #000;
 		display: block;
 		font-size: 1.2em;
@@ -600,7 +576,7 @@ ul {
 		transition: .3s ease-in-out;
 
 		&:hover {
-			background-color: @color_grey_bg;
+			background-color: $c_grey_bg;
 			color: #fff;
 		}
 
@@ -609,7 +585,7 @@ ul {
 		}
 
 		span {
-			font-family: @font_gotham_med;
+			font-family: $font_gotham_med;
 		}
 	}
 }
@@ -637,11 +613,16 @@ ul {
 	}
 }
 
+.counters {
+	left: -9999px;
+	position: absolute;
+	z-index: -1;
+}
+
 .div_center_1 {
 	font-size: 0;
 	height: 100%;
 	left: 0;
-	overflow: auto;
 	position: absolute;
 	text-align: center;
 	top: 0;
@@ -676,7 +657,7 @@ ul {
 
 .feedback2 {
 	margin: 0 auto;
-	max-width: 400px;
+	max-width: 420px;
 }
 
 .feedback_fail {}
@@ -686,7 +667,7 @@ ul {
 	text-align: center;
 
 	input {
-		background-color: @color_grey_input_bg;
+		background-color: $c_grey_input_bg;
 		color: #000;
 		letter-spacing: .25em;
 		text-align: center;
@@ -695,7 +676,7 @@ ul {
 	}
 
 	textarea {
-		background-color: @color_grey_input_bg;
+		background-color: $c_grey_input_bg;
 		color: #000;
 		height: 10em;
 		letter-spacing: .25em;
@@ -736,7 +717,7 @@ ul {
 }
 .feedback_message {}
 .feedback_select_apts {
-	background-color: @color_grey_input_bg;
+	background-color: $c_grey_input_bg;
 	cursor: pointer;
 	font-size: 1.4em;
 	letter-spacing: 0.25em;
@@ -756,12 +737,14 @@ ul {
 		width: 2em;
 	}
 }
-.feedback_select_apts_choose {}
+.feedback_select_apts_choose {
+	color: #000;
+}
 .feedback_select_apts_list {
 	cursor: pointer;
 	display: none;
 	font-size: 0;
-	font-family: @font_oranienbaum_reg;
+	font-family: $font_oranienbaum_reg;
 	left: 0;
 	position: absolute;
 	text-transform: uppercase;
@@ -780,21 +763,21 @@ ul {
 
 	li {
 		background-color: #fff;
-		border-bottom: 1px solid @color_grey_border;
-		border-left: 1px solid @color_grey_border;
-		border-right: 1px solid @color_grey_border;
+		border-bottom: 1px solid $c_grey_border;
+		border-left: 1px solid $c_grey_border;
+		border-right: 1px solid $c_grey_border;
 		display: block;
 		padding: 22px;
 		text-align: left;
-		transition: all .3s ease-in-out;
+		transition: $transition;
 		vertical-align: middle;
 
 		&:first-child {
-			border-top: 1px solid @color_grey_border;
+			border-top: 1px solid $c_grey_border;
 		}
 
 		&:hover {
-			background-color: @color_grey_border;
+			background-color: $c_grey_border;
 		}
 	}
 }
@@ -815,26 +798,33 @@ ul {
 	vertical-align: middle;
 	width: 70%;
 }
-.feedback_send_wrapper {}
+.feedback_send_wrapper {
+	position: relative;
+}
 .feedback_sending {}
 .feedback_status {
-	background-color: #000;
+	background-color: $c_pink_text;
 	color: #fff;
 	font-size: 1.6em;
+	height: 100%;
 	left: -9999px;
-	margin: -5em 0 0;
 	opacity: 0;
-	padding: 2em;
+	padding: 1.8em 1.8em 0;
 	position: absolute;
 	text-align: center;
 	text-transform: uppercase;
-	top: 50%;
+	top: 0;
 	transition: opacity .3s ease-in-out;
 	width: 100%;
 
 	&.active {
 		left: 0;
 		opacity: 1;
+	}
+
+	&.feedback_sending,
+	&.feedback_success {
+		background-color: $c_green_bg;
 	}
 }
 .feedback_success {}
@@ -852,6 +842,9 @@ ul {
 .fs0 {
 	font-size: 0;
 }
+.fs10 {
+	font-size: 10px;
+}
 .fs12 {
 	font-size: 12px;
 }
@@ -860,6 +853,9 @@ ul {
 }
 .fs15 {
 	font-size: 15px;
+}
+.fs16 {
+	font-size: 16px;
 }
 .fs18 {
 	font-size: 18px;
@@ -874,8 +870,27 @@ ul {
 	font-size: 28px;
 }
 
+
+
+.g-recaptcha {
+	text-align: center;
+
+	> div {
+		display: inline-block;
+		margin: 2.5em 0 0;
+	}
+
+	iframe {
+		margin: 0;
+		width: 100%;
+	}
+}
+
+
+
 .header {
-	background-color: @color_grey_bg;
+	/* background-color: $c_grey_bg; */
+	background-color: #000;
 	font-size: 0;
 	height: 74px;
 	left: 0;
@@ -883,7 +898,7 @@ ul {
 	text-align: center;
 	top: 0;
 	width: 100%;
-	z-index: 300;
+	z-index: 10;
 
 	&:after {
 		content: "";
@@ -897,6 +912,10 @@ ul {
 	display: none;
 }
 
+.ib {
+	display: inline-block;
+}
+
 .icons {
 	display: none;
 }
@@ -905,14 +924,163 @@ ul {
 	display: inline-block;
 }
 
-.item_body {}
+.item-111 {
+	@extend .logo;
+}
 
-.item_desc {}
-.item_desc_text {}
+.item_body {
+	p {
+		letter-spacing: .04em;
+		line-height: 1.4em;
+		margin: 0 0 1em;
+	}
+}
+
+.item_comfort {
+	font-family: $font_gotham_light;
+	margin: 0 0 16px;
+	width: 50%;
+
+	li {
+		display: inline-block;
+		font-size: 10px;
+		letter-spacing: .1em;
+		margin: 0 1% 1.5em 0;
+		min-height: 2em;
+		overflow: hidden;
+		padding: 0 .5em 0 0;
+		position: relative;
+		vertical-align: top;
+		width: 49%;
+
+		&:nth-child(2n) {
+			margin: 0 0 1.5em 1%;
+		}
+
+		> span {
+			width: 75%;
+		}
+
+		img {
+			display: inline-block;
+			max-width: 32px;
+			vertical-align: middle;
+			width: 20%;
+		}
+	}
+}
+
+.item_desc {
+	color: #000;
+	font-family: $font_pfdin_light;
+}
+.item_desc_text {
+	color: #000;
+	font-family: $font_pfdin_light;
+	font-size: 16px;
+	margin: 1.6em 0;
+}
 .item_img_main {}
-.item_img_more {}
-.item_prices {}
-.item_rules {}
+.item_img_main_wrap {
+	margin: 0 0 3em;
+	position: relative;
+
+	img {
+		display: block;
+		width: 100%;
+	}
+}
+.item_img_main_nav_next,
+.item_img_main_nav_prev {
+	cursor: pointer;
+	margin: -40px 0 0;
+	position: absolute;
+	top: 50%;
+
+	img {
+		box-sizing: content-box;
+		padding: 30px;
+		width: 20px;
+	}
+}
+.item_img_main_nav_next {
+	left: 100%;
+}
+.item_img_main_nav_prev {
+	right: 100%;
+}
+.item_img_more {
+	font-size: 0;
+
+	img {
+		height: 100%;
+	}
+
+	.owl-item {
+		height: 79px;
+
+		.item_img_more_block {
+			width: 100%;
+		}
+	}
+
+	.owl-next {
+		left: 100%;
+		right: auto;
+	}
+
+	.owl-prev {
+		left: auto;
+		right: 100%;
+	}
+}
+.item_img_more_block {
+	display: inline-block;
+	cursor: pointer;
+	height: 80px;
+	margin: 0 0 2% 2%;
+	overflow: hidden;
+	width: 12.5%;
+
+	&:first-child {
+		margin-left: 0;
+	}
+
+	&.active {
+		border: 7px solid #000;
+	}
+}
+.item_links {
+	margin: 2em 0 6em;
+
+	> a,
+	> a:visited {
+		width: 33%;
+	}
+
+	.reviews_booking {
+		display: inline-block;
+		margin: 0;
+	}
+}
+.item_map {
+	iframe {
+		height: 400px;
+		margin: 20px auto 80px;
+		width: 100%;
+	}
+}
+
+.item_rules {
+	font-size: 16px;
+	margin: 0 0 1em;
+	padding: 0 2em 0 0;
+	width: 50%;
+}
+
+.justify {
+	text-align: justify;
+}
 
 .left {
 	text-align: left;
@@ -957,10 +1125,106 @@ ul {
 .logo {
 	color: #fff;
 	display: block;
-	font-family: @font_oranienbaum_reg;
+	font-family: $font_oranienbaum_reg;
 	font-size: 2em;
 	line-height: 56px;
 	text-decoration: none;
+}
+
+.menu {}
+.menu_active {}
+
+.mobile_menu {
+	background-color: #fff;
+	display: none;
+	height: 100%;
+	left: 0;
+	/* padding: 74px 0 0; */
+	padding: 114px 0 0;
+	position: fixed;
+	text-align: center;
+	text-transform: uppercase;
+	top: 0;
+	width: 100%;
+	z-index: 9;
+
+	&.active {
+		display: block;
+	}
+
+	a,
+	a:visited {
+		color: #000;
+		display: block;
+		padding: 2em 0;
+		text-decoration: none;
+
+		&:hover {
+			background-color: #000;
+			color: #fff;
+		}
+	}
+
+	li {
+		font-size: 2em;
+		position: relative;
+		width: 100%;
+		z-index: 1;
+
+		&.logo,
+		&.mobile_menu_show {
+			display: none;
+		}
+	}
+
+	.menu {
+		height: 100%;
+		overflow: auto;
+	}
+}
+.mobile_menu_line {
+	background-color: #fff;
+	display: block;
+	height: 2px;
+	left: 0;
+	position: absolute;
+	transition: $transition;
+	width: 30px;
+
+	&:last-child {
+		margin: 0;
+	}
+}
+.mobile_menu_line_1 {
+	top: 0;
+}
+.mobile_menu_line_2 {
+	top: 12px;
+}
+.mobile_menu_line_3 {
+	top: 24px;
+}
+.mobile_menu_show {
+	> span {
+		display: inline-block;
+		height: 30px;
+		position: relative;
+		width: 30px;
+	}
+
+	&.menu_active {
+		.mobile_menu_line_1 {
+			top: 12px;
+			transform: rotate(45deg);
+		}
+		.mobile_menu_line_2 {
+			opacity: 0;
+		}
+		.mobile_menu_line_3 {
+			top: 12px;
+			transform: rotate(-45deg);
+		}
+	}
 }
 
 .mod_languages {
@@ -979,15 +1243,16 @@ ul {
 
 	a,
 	a:visited {
-		background-color: @color_grey_bg;
-		border-bottom: 1px solid @color_grey_bg;
-		border-left: 1px solid @color_grey_bg;
-		border-right: 1px solid @color_grey_bg;
+		/* background-color: $c_grey_bg; */
+		background-color: rgba(0,0,0, .99);
+		border-bottom: 1px solid #000;
+		border-left: 1px solid #000;
+		border-right: 1px solid #000;
 		display: block;
 		color: #fff;
 		line-height: 74px;
 		text-decoration: none;
-		transition: all .3s ease-in-out;
+		transition: $transition;
 
 		&:hover {
 			background-color: #fff;
@@ -1012,12 +1277,26 @@ ul {
 		cursor: pointer;
 		line-height: 74px;
 		padding: 0 2em;
-		transition: all .3s ease-in-out;
+		transition: $transition;
 
 		&:hover {
 			background-color: #fff;
 			color: #000;
 		}
+	}
+}
+
+.no_js {
+	.div_center_1 {
+		position: relative;
+	}
+
+	.fa {
+		display: none;
+	}
+
+	.reviews_slider_item {
+		margin-bottom: 100px;
 	}
 }
 
@@ -1063,18 +1342,20 @@ ul {
 
 .owl-dot {
 	background-color: rgba(0,0,0,0);
-	border: 1px solid @color_grey_bg;
+	/* border: 1px solid $c_grey_bg; */
+	border: 1px solid #000;
 	border-radius: 50%;
 	cursor: pointer;
 	display: inline-block;
 	font-size: 10px;
 	height: 1.4em;
 	margin: 0 1.2em;
-	transition: all .3s ease-in-out;
+	transition: $transition;
 	width: 1.4em;
 
 	&.active {
-		background-color: @color_grey_bg;
+		/* background-color: $c_grey_bg; */
+		background-color: #000;
 	}
 }
 .owl-dots {
@@ -1102,12 +1383,20 @@ ul {
 .owl-loading {}
 
 .owl-nav {
+	font-size: 32px;
+
 	> div {
 		cursor: pointer;
+		margin: -1.5em 0 0;
+		padding: 1em .5em;
 		position: absolute;
 		top: 50%;
-		transition: all .3s ease-in-out;
-		z-index: 100;
+		transition: $transition;
+		z-index: 8;
+
+		&.disabled {
+			display: none;
+		}
 	}
 }
 
@@ -1144,7 +1433,7 @@ ul {
 	height: 100%;
 	margin: 0 auto;
 	position: relative;
-	z-index: 50;
+	z-index: 7;
 }
 
 .page {
@@ -1158,7 +1447,7 @@ ul {
 	position: fixed;
 	top: 0;
 	width: 100%;
-	z-index: 800;
+	z-index: 15;
 
 	&.active {
 		display: block;
@@ -1171,7 +1460,7 @@ ul {
 	position: fixed;
 	top: 0;
 	width: 100%;
-	z-index: 900;
+	z-index: 20;
 
 	&.active {
 		display: block;
@@ -1193,22 +1482,26 @@ ul {
 	padding: .35em;
 	position: absolute;
 	right: 1.2em;
-	text-align: center;
 	top: 1.2em;
+	z-index: 2;
 }
 .popup_content {
 	background-color: #fff;
 	height: 100%;
 	margin: 0 auto;
-	max-width: 900px;
+	max-width: 1000px;
 	overflow: auto;
-	padding: 0 10em;
 	position: relative;
 	width: 100%;
 	z-index: 100;
+
+	.item_body {
+		margin: 0 auto;
+		max-width: 700px;
+	}
 }
 .popup_content_ajax {
-	padding: 10em 0;
+	padding: 10em 16px;
 }
 .popup_open {}
 .popup_open2 {}
@@ -1218,6 +1511,7 @@ ul {
 }
 
 .powered_by {
+	color: #000;
 	font-size: 1.4em;
 	padding: 7em 1em;
 	text-align: center;
@@ -1225,11 +1519,13 @@ ul {
 
 	a,
 	a:visited {
-		color: @color_grey_light_text;
+		color: #000;
+		font-family: $font_gotham_bold;
 		text-decoration: none;
 
 		&:hover {
 			color: #000;
+			text-decoration: underline;
 		}
 	}
 }
@@ -1244,23 +1540,47 @@ ul {
 	}
 }
 
-.reviews_booking,
-.reviews_booking:visited {
-	color: @color_yellow;
+.reviews_airbnb,
+.reviews_airbnb:visited {
+	color: $c_pink_text;
 	display: block;
-	font-family: @font_gotham_black;
+	font-family: $font_gotham_black;
 	font-size: 30px;
 	margin: 1em 0 0;
 	position: relative;
 	text-align: right;
 	text-decoration: none;
 
-	img {
-		color: @color_blue_light_text;
+	img,
+	svg {
 		display: inline-block;
-		font-family: @font_gotham_reg;
+		font-family: $font_gotham_reg;
 		font-size: .6em;
 		margin: 0 .5em 0 0;
+		max-width: 150px;
+		vertical-align: middle;
+	}
+}
+
+.reviews_booking,
+.reviews_booking:visited {
+	color: $c_yellow;
+	display: block;
+	font-family: $font_gotham_black;
+	font-size: 30px;
+	margin: 1em 0 0;
+	position: relative;
+	text-align: right;
+	text-decoration: none;
+
+	img,
+	svg {
+		color: $c_blue_light_text;
+		display: inline-block;
+		font-family: $font_gotham_reg;
+		font-size: .6em;
+		margin: 0 .5em 0 0;
+		max-width: 150px;
 		vertical-align: middle;
 	}
 }
@@ -1279,32 +1599,31 @@ ul {
 	}
 }
 .reviews_slider_data {
-	font-family: @font_pfdin_light_italic;
+	font-family: $font_pfdin_light_italic;
 	font-size: 1.8em;
 	float: left;
 }
 .reviews_slider_desc {
-	display: inline-block;
-	font-family: @font_pfdin_light;
-	font-size: 10px;
+	font-family: $font_pfdin_light;
 	padding: 0 0 0 4em;
-	vertical-align: top;
 	width: 80%;
 }
 .reviews_slider_img {
 	display: inline-block;
 	font-size: 10px;
+	max-width: 200px;
 	width: 20%;
 
 	img {
 		border-radius: 50%;
+		filter: grayscale(100%);
 		display: block;
 		margin: 0 0 20px;
 		width: 100%;
 	}
 }
 .reviews_slider_img_desc {
-	font-family: @font_gotham_med;
+	font-family: $font_gotham_med;
 	font-size: 1.2em;
 	letter-spacing: .2em;
 	text-align: center;
@@ -1321,10 +1640,9 @@ ul {
 	font-size: 1.8em;
 	line-height: 1.4em;
 	padding: 0 0 1em;
-	text-align: justify;
 }
 .reviews_slider_villa {
-	font-family: @font_pfdin_italic;
+	font-family: $font_pfdin_italic;
 	font-size: 1.8em;
 	float: right;
 }
@@ -1365,31 +1683,59 @@ ul {
 	text-transform: uppercase;
 	vertical-align: middle;
 
-	li {
-		cursor: pointer;
-		font-size: 12px;
+	a,
+	a:visited {
+		color: #fff;
 		display: inline-block;
-		letter-spacing: .2em;
 		line-height: 74px;
+		outline: 0 none;
 		padding: 0 2em;
-		transition: all .3s ease-in-out;
-		vertical-align: middle;
+		text-decoration: none;
+		transition: $transition;
 
-		&:hover,
+		&:hover {
+			background-color: #eee;
+			color: #000;
+		}
+
 		&.active {
 			background-color: #fff;
 			color: #000;
+		}
+	}
+
+	li {
+		cursor: pointer;
+		display: inline-block;
+		font-size: 12px;
+		letter-spacing: .2em;
+		line-height: 74px;
+		vertical-align: middle;
+
+		&.mobile_menu_show {
+			display: none;
+			height: 74px;
+
+			&:hover {
+				background-color: transparent;
+				color: #fff;
+			}
 		}
 
 		&.logo {
 			font-size: 30px;
 			letter-spacing: .1em;
 
+			a,
+			a:visited {
+				padding: 0 24px;
+
 				&:hover,
 				&.active {
-					background-color: @color_grey_bg;
+					background-color: #000;
 					color: #fff;
 				}
+			}
 		}
 	}
 
@@ -1398,13 +1744,131 @@ ul {
 	}
 }
 
-.vert_mid {
+.topmenu_inside {
+	color: #fff;
+	display: inline-block;
+	text-transform: uppercase;
 	vertical-align: middle;
+
+	a,
+	a:visited {
+		color: #fff;
+		cursor: pointer;
+		font-size: 12px;
+		display: inline-block;
+		letter-spacing: .2em;
+		line-height: 74px;
+		padding: 0 2em;
+		text-decoration: none;
+		transition: $transition;
+		vertical-align: middle;
+
+		&:hover,
+		&.active {
+			background-color: #fff;
+			color: #000;
+		}
+	}
+
+	li {
+		display: inline-block;
+		vertical-align: middle;
+
+		&.item-111 {
+			a,
+			a:visited {
+				font-size: 30px;
+				letter-spacing: .1em;
+
+				&:hover {
+					background-color: $c_grey_bg;
+					color: #fff;
+				}
+			}
+		}
+	}
+
+	ul {
+		font-size: 0;
+	}
 }
-.vert_bot {
+
+.uc {
+	text-transform: uppercase;
+}
+
+.vb {
 	vertical-align: bottom;
 }
-.vert_top {
+
+.video_preview {
+	display: inline-block;
+	margin: 1em auto;
+	min-height: 250px;
+	overflow: hidden;
+	position: relative;
+	width: 100%;
+
+	&.active .bt_play {
+		display: none;
+	}
+
+	iframe {
+		display: inline-block;
+		margin: 0;
+		min-height: 350px;
+		max-width: 700px;
+		width: 100%;
+	}
+
+	img {
+		cursor: pointer;
+		display: block;
+		width: 100%;
+		margin: 0 auto;
+		max-width: 640px;
+		filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */
+		transition: filter .7s ease-in-out;
+	}
+
+	&:hover {
+		&:hover img {
+			filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
+		}
+
+		.bt_play {
+			background: #000;
+		}
+	}
+}
+
+.villa_prices {
+	margin: 4.5em 0 4em;
+
+	> div {
+		display: inline-block;
+		text-align: left;
+		vertical-align: top;
+		width: 33%;
+	}
+}
+.villa_prices_desc {
+	font-size: 1.4em;
+	letter-spacing: .1em;
+	line-height: 1.5em;
+}
+.villa_prices_title {
+	font-family: $font_gotham_bold;
+	font-size: 1.8em;
+	letter-spacing: .2em;
+	line-height: .8em;
+	margin: 0 0 .5em;
+}
+
+.vm {
+	vertical-align: middle;
+}
+.vt {
 	vertical-align: top;
 }
 
@@ -1440,6 +1904,11 @@ ul {
 	max-width: 900px;
 	width: 100%;
 }
+.wrap3 {
+	margin: 0 auto;
+	max-width: 700px;
+	width: 100%;
+}
 /*** help classes [END] ***/
 
 /*** Different screen sizes [START] ***/
@@ -1461,6 +1930,22 @@ ul {
 		}
 	}
 }
+@media only screen and (max-width: 980px) {
+	.topmenu {
+		li {
+			display: none;
+
+			&.logo {
+				display: inline-block;
+				padding: 0;
+			}
+
+			&.mobile_menu_show {
+				display: inline-block;
+			}
+		}
+	}
+}
 @media only screen and (max-width: 900px) {
 	.bg {
 		img {
@@ -1472,13 +1957,274 @@ ul {
 	.block_items_img {
 		height: auto;
 	}
+
+	.block_villas_img {
+		height: 250px;
+	}
+
+	.block_villas_links {
+		width: 100%;
+	}
+
+	.block_villas_prices {
+		margin: 6em 0 3em;
+		padding: 0;
+		text-align: center;
+		width: 100%;
+	}
+
+	.div_center_1 {
+		position: relative;
+	}
+
+	.item_comfort {
+		width: 100%;
+	}
+
+	.item_img_main_nav_next {
+		left: auto;
+		right: 0;
+	}
+
+	.item_img_main_nav_prev {
+		left: 0;
+		right: auto;
+	}
+
+	.item_img_more {
+		.owl-nav {
+			display: none;
+		}
+	}
+
+	.villa_prices {
+		> div {
+			margin: 0 0 4em;
+			text-align: center;
+			width: 100%;
+		}
+	}
+
+	.item_links {
+		> a,
+		> a:visited {
+			margin: 0 0 1em;
+			text-align: center;
+			width: 100%;
+		}
+
+		.reviews_booking {
+			margin: 0 0 1em;
+		}
+	}
+
+	.item_rules {
+		width: 100%;
+	}
+}
+@media only screen and (max-width: 750px) {
+	.block_1_title {
+		margin: 0 0 1.6em;
+	}
+
+	.block_villas_img {
+		height: 200px;
+	}
+
+	.owl-nav {
+		> div {
+			top: 0;
+		}
+	}
+
+	.reviews_slider {
+		.owl-next {
+			margin: 40px -180px 0 0;
+			right: 50%;
+
+			img {
+				height: 50px;
+			}
+		}
+		.owl-prev {
+			left: 50%;
+			margin: 40px 0 0 -180px;
+
+			img {
+				height: 50px;
+			}
+		}
+	}
+
+	.reviews_slider_desc {
+		padding: 0 10em;
+		width: 100%;
+	}
+
+	.reviews_slider_img {
+		margin: 0 0 2em;
+		width: 100%;
+	}
+
+	.reviews_slider_item {
+		padding: 0;
+	}
+
+	.stars {
+		left: 0;
+		margin: 0;
+		text-align: center;
+		top: 100%;
+		width: 100%;
+	}
+}
+@media only screen and (max-width: 680px) {
+	.contacts_links {
+		> a,
+		> a:visited {
+			font-size: 1.1em;
+		}
+	}
+}
+@media only screen and (max-width: 650px) {
+	.block_villas_img {
+		height: 170px;
+	}
 }
 @media only screen and (max-width: 600px) {
+	.block_villas_img {
+		height: auto;
+	}
+
+	.block_villas_links_horizontal,
+	.block_villas_links_vertical {
+		.block_villas_img {
+			img {
+				height: auto;
+				width: 100%;
+			}
+		}
+	}
+
+	.block_villas_wrap {
+		a,
+		a:visited {
+			width: 100%;
+		}
+	}
+
+	.contacts_img {
+		height: auto;
+		left: auto;
+		margin: 0 auto 34px;
+		max-width: 297px;
+		position: relative;
+		top: auto;
+		width: 100%;
+	}
+
+	.contacts_links {
+		display: block;
+		margin: 0 auto;
+		max-width: 320px;
+		padding: 0;
+		width: 100%;
+	}
+
+	.contacts_links_desc {
+		text-align: center;
+	}
+
+	.feedback_field_date {
+		input {
+			width: 100%;
+
+			&:first-child {
+				margin-right: 0;
+			}
+		}
+	}
+
 	.offline_login {
 		input {
 			display: block;
 			margin: 1em auto 0;
 			width: 90%;
+		}
+	}
+}
+@media only screen and (max-width: 550px) {
+	.item_comfort {
+		li {
+			margin: 0 0 1em;
+			width: 100%;
+
+			&:nth-child(2n) {
+				margin: 0 0 1em;
+				width: 100%;
+			}
+		}
+	}
+
+	.reviews_slider_desc {
+		padding: 0 5em;
+	}
+}
+@media only screen and (max-width: 500px) {
+	.reviews_slider_img {
+		max-width: 170px;
+	}
+}
+@media only screen and (max-width: 450px) {
+	.contacts_links {
+		> a,
+		> a:visited {
+			font-size: 1em;
+		}
+	}
+
+	.feedback_status {
+		padding-top: 1em;
+	}
+}
+@media only screen and (max-width: 400px) {
+	.reviews_slider {
+		.owl-next {
+			margin: 40px 0 0;
+			right: 0;
+
+			img {
+				height: 50px;
+			}
+		}
+		.owl-prev {
+			left: 0;
+			margin: 40px 0 0;
+
+			img {
+				height: 50px;
+			}
+		}
+	}
+
+	.reviews_slider_desc {
+		padding: 0 1em;
+	}
+
+	.topmenu {
+		li {
+			&.logo {
+				font-size: 26px;
+			}
+		}
+	}
+}
+@media only screen and (max-width: 350px) {
+	.topmenu {
+		li {
+			&.logo {
+				font-size: 23px;
+			}
 		}
 	}
 }
@@ -1509,24 +2255,10 @@ ul {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 .owl-item {
 	position: relative;
 	min-height: 1px;
 	float: left;
-	-webkit-backface-visibility: hidden;
-	-webkit-tap-highlight-color: transparent;
-	-webkit-touch-callout: none;
 }
 
 
@@ -1534,8 +2266,6 @@ ul {
 	.owl-stage-outer {
 		position: relative;
 		overflow: hidden;
-		/* fix for flashing background */
-		-webkit-transform: translate3d(0px, 0px, 0px);
 	}
 
 	.owl-nav.disabled,
@@ -1547,12 +2277,6 @@ ul {
 	.owl-nav .owl-next,
 	.owl-dot {
 		cursor: pointer;
-		cursor: hand;
-		-webkit-user-select: none;
-		-khtml-user-select: none;
-		-moz-user-select: none;
-		-ms-user-select: none;
-		user-select: none;
 	}
 
 	&.owl-hidden {
@@ -1561,13 +2285,6 @@ ul {
 
 	&.owl-refresh .owl-item {
 		visibility: hidden;
-	}
-
-	&.owl-drag .owl-item {
-		-webkit-user-select: none;
-		-moz-user-select: none;
-		-ms-user-select: none;
-		user-select: none;
 	}
 
 	&.owl-grab {
@@ -1583,19 +2300,5 @@ ul {
 		float: right;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

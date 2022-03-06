@@ -2,7 +2,7 @@
 
 
 <?php
-$themeFolder    = '/wp-content/themes/foxartbox';
+$themeFolder    = '/templates/vb';
 $i              = '/images';
 ?>
 
@@ -53,9 +53,11 @@ $i              = '/images';
 			<a class="bansko_phone" href="tel:+359882744430">+359 (88) 27-444-30</a>
 		</p>
 
-		<p class="bansko_messangers">
-			<a href="https://api.whatsapp.com/send?phone=359882744430" target="_blank">WhatsApp</a> | <a href="viber://chat/?number=359882744430" target="_blank">Viber</a> | <a href="https://telegram.me/dfoxweb" target="_blank">Telegram</a>
-		</p>
+		<ul class="bansko_messangers">
+			<li><a href="https://api.whatsapp.com/send?phone=359882744430" target="_blank">WhatsApp</a></li>
+			<li><a href="viber://chat/?number=359882744430" target="_blank">Viber</a></li>
+			<li><a href="https://telegram.me/dfoxweb" target="_blank">Telegram</a></li>
+		</ul>
 	</div>
 </div>
 </body>

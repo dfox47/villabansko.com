@@ -1,16 +1,10 @@
-/*! jQuery UI - v1.12.1 - 2016-09-14
-* http://jqueryui.com
-* Includes: widget.js, position.js, data.js, disable-selection.js, effect.js, effects/effect-blind.js, effects/effect-bounce.js, effects/effect-clip.js, effects/effect-drop.js, effects/effect-explode.js, effects/effect-fade.js, effects/effect-fold.js, effects/effect-highlight.js, effects/effect-puff.js, effects/effect-pulsate.js, effects/effect-scale.js, effects/effect-shake.js, effects/effect-size.js, effects/effect-slide.js, effects/effect-transfer.js, focusable.js, form-reset-mixin.js, jquery-1-7.js, keycode.js, labels.js, scroll-parent.js, tabbable.js, unique-id.js, widgets/accordion.js, widgets/autocomplete.js, widgets/button.js, widgets/checkboxradio.js, widgets/controlgroup.js, widgets/datepicker.js, widgets/dialog.js, widgets/draggable.js, widgets/droppable.js, widgets/menu.js, widgets/mouse.js, widgets/progressbar.js, widgets/resizable.js, widgets/selectable.js, widgets/selectmenu.js, widgets/slider.js, widgets/sortable.js, widgets/spinner.js, widgets/tabs.js, widgets/tooltip.js
-* Copyright jQuery Foundation and other contributors; Licensed MIT */
-
 (function( factory ) {
 	if ( typeof define === "function" && define.amd ) {
 
-		// AMD. Register as an anonymous module.
 		define([ "jquery" ], factory );
-	} else {
+	}
+	else {
 
-		// Browser globals
 		factory( jQuery );
 	}
 }(function( $ ) {
@@ -18,25 +12,6 @@
 $.ui = $.ui || {};
 
 var version = $.ui.version = "1.12.1";
-
-
-/*!
- * jQuery UI Widget 1.12.1
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-//>>label: Widget
-//>>group: Core
-//>>description: Provides a factory for creating stateful widgets with a common API.
-//>>docs: http://api.jqueryui.com/jQuery.widget/
-//>>demos: http://jqueryui.com/widget/
-
-
-
 var widgetUuid = 0;
 var widgetSlice = Array.prototype.slice;
 
@@ -46,13 +21,11 @@ $.cleanData = ( function( orig ) {
 		for ( i = 0; ( elem = elems[ i ] ) != null; i++ ) {
 			try {
 
-				// Only trigger remove when necessary to save time
 				events = $._data( elem, "events" );
 				if ( events && events.remove ) {
 					$( elem ).triggerHandler( "remove" );
 				}
 
-			// Http://bugs.jquery.com/ticket/8235
 			} catch ( e ) {}
 		}
 		orig( elems );
@@ -62,8 +35,6 @@ $.cleanData = ( function( orig ) {
 $.widget = function( name, base, prototype ) {
 	var existingConstructor, constructor, basePrototype;
 
-	// ProxiedPrototype allows the provided prototype to remain unmodified
-	// so that it can be used as a mixin for multiple widgets (#8876)
 	var proxiedPrototype = {};
 
 	var namespace = name.split( "." )[ 0 ];
@@ -79,7 +50,6 @@ $.widget = function( name, base, prototype ) {
 		prototype = $.extend.apply( null, [ {} ].concat( prototype ) );
 	}
 
-	// Create selector for plugin
 	$.expr[ ":" ][ fullName.toLowerCase() ] = function( elem ) {
 		return !!$.data( elem, fullName );
 	};
@@ -87,37 +57,25 @@ $.widget = function( name, base, prototype ) {
 	$[ namespace ] = $[ namespace ] || {};
 	existingConstructor = $[ namespace ][ name ];
 	constructor = $[ namespace ][ name ] = function( options, element ) {
-
-		// Allow instantiation without "new" keyword
 		if ( !this._createWidget ) {
 			return new constructor( options, element );
 		}
 
-		// Allow instantiation without initializing for simple inheritance
-		// must use "new" keyword (the code above always passes args)
 		if ( arguments.length ) {
 			this._createWidget( options, element );
 		}
 	};
 
-	// Extend with the existing constructor to carry over any static properties
 	$.extend( constructor, existingConstructor, {
 		version: prototype.version,
 
-		// Copy the object used to create the prototype in case we need to
-		// redefine the widget later
 		_proto: $.extend( {}, prototype ),
 
-		// Track widgets that inherit from this widget in case this widget is
-		// redefined after a widget inherits from it
 		_childConstructors: []
 	} );
 
 	basePrototype = new base();
 
-	// We need to make the options hash a property directly on the new instance
-	// otherwise we'll modify the options hash on the prototype that we're
-	// inheriting from
 	basePrototype.options = $.widget.extend( {}, basePrototype.options );
 	$.each( prototype, function( prop, value ) {
 		if ( !$.isFunction( value ) ) {
@@ -152,9 +110,6 @@ $.widget = function( name, base, prototype ) {
 	} );
 	constructor.prototype = $.widget.extend( basePrototype, {
 
-		// TODO: remove support for widgetEventPrefix
-		// always use the name + a colon as the prefix, e.g., draggable:start
-		// don't prefix for widgets that aren't DOM-based
 		widgetEventPrefix: existingConstructor ? ( basePrototype.widgetEventPrefix || name ) : name
 	}, proxiedPrototype, {
 		constructor: constructor,
@@ -163,24 +118,17 @@ $.widget = function( name, base, prototype ) {
 		widgetFullName: fullName
 	} );
 
-	// If this widget is being redefined then we need to find all widgets that
-	// are inheriting from it and redefine all of them so that they inherit from
-	// the new version of this widget. We're essentially trying to replace one
-	// level in the prototype chain.
 	if ( existingConstructor ) {
 		$.each( existingConstructor._childConstructors, function( i, child ) {
 			var childPrototype = child.prototype;
 
-			// Redefine the child widget using the same prototype that was
-			// originally used, but inherit from the new version of the base
 			$.widget( childPrototype.namespace + "." + childPrototype.widgetName, constructor,
 				child._proto );
 		} );
 
-		// Remove the list of existing child constructors from the old constructor
-		// so the old child constructors can be garbage collected
 		delete existingConstructor._childConstructors;
-	} else {
+	}
+	else {
 		base._childConstructors.push( constructor );
 	}
 
@@ -201,16 +149,13 @@ $.widget.extend = function( target ) {
 			value = input[ inputIndex ][ key ];
 			if ( input[ inputIndex ].hasOwnProperty( key ) && value !== undefined ) {
 
-				// Clone objects
 				if ( $.isPlainObject( value ) ) {
 					target[ key ] = $.isPlainObject( target[ key ] ) ?
 						$.widget.extend( {}, target[ key ], value ) :
 
-						// Don't extend strings, arrays, etc. with objects
 						$.widget.extend( {}, value );
-
-				// Copy everything else by reference
-				} else {
+				}
+				else {
 					target[ key ] = value;
 				}
 			}
@@ -228,11 +173,10 @@ $.widget.bridge = function( name, object ) {
 
 		if ( isMethodCall ) {
 
-			// If this is an empty collection, we need to have the instance method
-			// return undefined instead of the jQuery instance
 			if ( !this.length && options === "instance" ) {
 				returnValue = undefined;
-			} else {
+			}
+			else {
 				this.each( function() {
 					var methodValue;
 					var instance = $.data( this, fullName );
@@ -263,9 +207,8 @@ $.widget.bridge = function( name, object ) {
 					}
 				} );
 			}
-		} else {
-
-			// Allow multiple hashes to be passed on init
+		}
+		else {
 			if ( args.length ) {
 				options = $.widget.extend.apply( null, [ options ].concat( args ) );
 			}
@@ -299,7 +242,6 @@ $.Widget.prototype = {
 		classes: {},
 		disabled: false,
 
-		// Callbacks
 		create: null
 	},
 
@@ -325,10 +267,8 @@ $.Widget.prototype = {
 			} );
 			this.document = $( element.style ?
 
-				// Element within the document
 				element.ownerDocument :
 
-				// Element is window or document
 				element.document || element );
 			this.window = $( this.document[ 0 ].defaultView || this.document[ 0 ].parentWindow );
 		}
@@ -366,8 +306,6 @@ $.Widget.prototype = {
 			that._removeClass( value, key );
 		} );
 
-		// We can probably remove the unbind calls in 2.0
-		// all event bindings should go through this._on()
 		this.element
 			.off( this.eventNamespace )
 			.removeData( this.widgetFullName );
@@ -375,7 +313,6 @@ $.Widget.prototype = {
 			.off( this.eventNamespace )
 			.removeAttr( "aria-disabled" );
 
-		// Clean up events and states
 		this.bindings.off( this.eventNamespace );
 	},
 
@@ -393,13 +330,10 @@ $.Widget.prototype = {
 
 		if ( arguments.length === 0 ) {
 
-			// Don't return a reference to the internal hash
 			return $.widget.extend( {}, this.options );
 		}
 
 		if ( typeof key === "string" ) {
-
-			// Handle nested keys, e.g., "foo.bar" => { foo: { bar: ___ } }
 			options = {};
 			parts = key.split( "." );
 			key = parts.shift();
@@ -462,17 +396,9 @@ $.Widget.prototype = {
 				continue;
 			}
 
-			// We are doing this to create a new jQuery object because the _removeClass() call
-			// on the next line is going to destroy the reference to the current elements being
-			// tracked. We need to save a copy of this collection so that we can add the new classes
-			// below.
 			elements = $( currentElements.get() );
 			this._removeClass( currentElements, classKey );
 
-			// We don't use _addClass() here, because that uses this.options.classes
-			// for generating the string of classes. We want to use the value passed in from
-			// _setOption(), this is the new value of the classes option which was passed to
-			// _setOption(). We pass this value directly to _classes().
 			elements.addClass( this._classes( {
 				element: elements,
 				keys: classKey,
@@ -485,7 +411,6 @@ $.Widget.prototype = {
 	_setOptionDisabled: function( value ) {
 		this._toggleClass( this.widget(), this.widgetFullName + "-disabled", null, !!value );
 
-		// If the widget is becoming disabled, then nothing is interactive
 		if ( value ) {
 			this._removeClass( this.hoverable, null, "ui-state-hover" );
 			this._removeClass( this.focusable, null, "ui-state-focus" );
@@ -574,19 +499,18 @@ $.Widget.prototype = {
 		var delegateElement;
 		var instance = this;
 
-		// No suppressDisabledCheck flag, shuffle arguments
 		if ( typeof suppressDisabledCheck !== "boolean" ) {
 			handlers = element;
 			element = suppressDisabledCheck;
 			suppressDisabledCheck = false;
 		}
 
-		// No element argument, shuffle and use this.element
 		if ( !handlers ) {
 			handlers = element;
 			element = this.element;
 			delegateElement = this.widget();
-		} else {
+		}
+		else {
 			element = delegateElement = $( element );
 			this.bindings = this.bindings.add( element );
 		}
@@ -594,9 +518,6 @@ $.Widget.prototype = {
 		$.each( handlers, function( event, handler ) {
 			function handlerProxy() {
 
-				// Allow widgets to customize the disabled handling
-				// - disabled as an array instead of boolean
-				// - disabled class as method for disabling individual parts
 				if ( !suppressDisabledCheck &&
 						( instance.options.disabled === true ||
 						$( this ).hasClass( "ui-state-disabled" ) ) ) {
@@ -606,7 +527,6 @@ $.Widget.prototype = {
 					.apply( instance, arguments );
 			}
 
-			// Copy the guid so direct unbinding works
 			if ( typeof handler !== "string" ) {
 				handlerProxy.guid = handler.guid =
 					handler.guid || handlerProxy.guid || $.guid++;
@@ -629,7 +549,6 @@ $.Widget.prototype = {
 			this.eventNamespace;
 		element.off( eventName ).off( eventName );
 
-		// Clear the stack to avoid memory leaks (#10056)
 		this.bindings = $( this.bindings.not( element ).get() );
 		this.focusable = $( this.focusable.not( element ).get() );
 		this.hoverable = $( this.hoverable.not( element ).get() );
@@ -678,12 +597,10 @@ $.Widget.prototype = {
 			type :
 			this.widgetEventPrefix + type ).toLowerCase();
 
-		// The original event may come from any element
-		// so we need to reset the target on the new event
 		event.target = this.element[ 0 ];
 
-		// Copy original event properties over to the new event
 		orig = event.originalEvent;
+
 		if ( orig ) {
 			for ( prop in orig ) {
 				if ( !( prop in event ) ) {
@@ -726,9 +643,11 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 
 		if ( hasOptions && $.effects && $.effects.effect[ effectName ] ) {
 			element[ method ]( options );
-		} else if ( effectName !== method && element[ effectName ] ) {
+		}
+		else if ( effectName !== method && element[ effectName ] ) {
 			element[ effectName ]( options.duration, options.easing, callback );
-		} else {
+		}
+		else {
 			element.queue( function( next ) {
 				$( this )[ method ]();
 				if ( callback ) {
@@ -741,25 +660,6 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 } );
 
 var widget = $.widget;
-
-
-/*!
- * jQuery UI Position 1.12.1
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- *
- * http://api.jqueryui.com/position/
- */
-
-//>>label: Position
-//>>group: Core
-//>>description: Positions elements relative to other elements.
-//>>docs: http://api.jqueryui.com/position/
-//>>demos: http://jqueryui.com/position/
-
 
 ( function() {
 var cachedScrollbarWidth,
@@ -875,7 +775,6 @@ $.fn.position = function( options ) {
 		return _position.apply( this, arguments );
 	}
 
-	// Make a copy, we don't want to modify arguments
 	options = $.extend( {}, options );
 
 	var atOffset, targetWidth, targetHeight, targetOffset, basePosition, dimensions,
@@ -888,18 +787,14 @@ $.fn.position = function( options ) {
 	dimensions = getDimensions( target );
 	if ( target[ 0 ].preventDefault ) {
 
-		// Force left top to allow flipping
 		options.at = "left top";
 	}
 	targetWidth = dimensions.width;
 	targetHeight = dimensions.height;
 	targetOffset = dimensions.offset;
 
-	// Clone to reuse original targetOffset later
 	basePosition = $.extend( {}, targetOffset );
 
-	// Force my and at to have valid horizontal and vertical positions
-	// if a value is missing or invalid, it will be converted to center
 	$.each( [ "my", "at" ], function() {
 		var pos = ( options[ this ] || "" ).split( " " ),
 			horizontalOffset,
@@ -915,7 +810,6 @@ $.fn.position = function( options ) {
 		pos[ 0 ] = rhorizontal.test( pos[ 0 ] ) ? pos[ 0 ] : "center";
 		pos[ 1 ] = rvertical.test( pos[ 1 ] ) ? pos[ 1 ] : "center";
 
-		// Calculate offsets
 		horizontalOffset = roffset.exec( pos[ 0 ] );
 		verticalOffset = roffset.exec( pos[ 1 ] );
 		offsets[ this ] = [
@@ -923,14 +817,12 @@ $.fn.position = function( options ) {
 			verticalOffset ? verticalOffset[ 0 ] : 0
 		];
 
-		// Reduce to just the positions without the offsets
 		options[ this ] = [
 			rposition.exec( pos[ 0 ] )[ 0 ],
 			rposition.exec( pos[ 1 ] )[ 0 ]
 		];
 	} );
 
-	// Normalize collision option
 	if ( collision.length === 1 ) {
 		collision[ 1 ] = collision[ 0 ];
 	}
@@ -1005,8 +897,6 @@ $.fn.position = function( options ) {
 		} );
 
 		if ( options.using ) {
-
-			// Adds feedback as second argument to using callback, if present
 			using = function( props ) {
 				var left = targetOffset.left - position.left,
 					right = left + targetWidth - elemWidth,
@@ -1060,20 +950,16 @@ $.ui.position = {
 				overRight = collisionPosLeft + data.collisionWidth - outerWidth - withinOffset,
 				newOverRight;
 
-			// Element is wider than within
 			if ( data.collisionWidth > outerWidth ) {
 
-				// Element is initially over the left side of within
 				if ( overLeft > 0 && overRight <= 0 ) {
 					newOverRight = position.left + overLeft + data.collisionWidth - outerWidth -
 						withinOffset;
 					position.left += overLeft - newOverRight;
 
-				// Element is initially over right side of within
 				} else if ( overRight > 0 && overLeft <= 0 ) {
 					position.left = withinOffset;
 
-				// Element is initially over both left and right sides of within
 				} else {
 					if ( overLeft > overRight ) {
 						position.left = withinOffset + outerWidth - data.collisionWidth;
@@ -1082,15 +968,12 @@ $.ui.position = {
 					}
 				}
 
-			// Too far left -> align with left edge
 			} else if ( overLeft > 0 ) {
 				position.left += overLeft;
 
-			// Too far right -> align with right edge
 			} else if ( overRight > 0 ) {
 				position.left -= overRight;
 
-			// Adjust based on position and margin
 			} else {
 				position.left = max( position.left - collisionPosLeft, position.left );
 			}
@@ -1104,20 +987,16 @@ $.ui.position = {
 				overBottom = collisionPosTop + data.collisionHeight - outerHeight - withinOffset,
 				newOverBottom;
 
-			// Element is taller than within
 			if ( data.collisionHeight > outerHeight ) {
 
-				// Element is initially over the top of within
 				if ( overTop > 0 && overBottom <= 0 ) {
 					newOverBottom = position.top + overTop + data.collisionHeight - outerHeight -
 						withinOffset;
 					position.top += overTop - newOverBottom;
 
-				// Element is initially over bottom of within
 				} else if ( overBottom > 0 && overTop <= 0 ) {
 					position.top = withinOffset;
 
-				// Element is initially over both top and bottom of within
 				} else {
 					if ( overTop > overBottom ) {
 						position.top = withinOffset + outerHeight - data.collisionHeight;
@@ -1126,15 +1005,12 @@ $.ui.position = {
 					}
 				}
 
-			// Too far up -> align with top
 			} else if ( overTop > 0 ) {
 				position.top += overTop;
 
-			// Too far down -> align with bottom edge
 			} else if ( overBottom > 0 ) {
 				position.top -= overBottom;
 
-			// Adjust based on position and margin
 			} else {
 				position.top = max( position.top - collisionPosTop, position.top );
 			}
@@ -1230,22 +1106,6 @@ $.ui.position = {
 
 var position = $.ui.position;
 
-
-/*!
- * jQuery UI :data 1.12.1
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-//>>label: :data Selector
-//>>group: Core
-//>>description: Selects elements which have data stored under the specified key.
-//>>docs: http://api.jqueryui.com/data-selector/
-
-
 var data = $.extend( $.expr[ ":" ], {
 	data: $.expr.createPseudo ?
 		$.expr.createPseudo( function( dataName ) {
@@ -1259,23 +1119,6 @@ var data = $.extend( $.expr[ ":" ], {
 			return !!$.data( elem, match[ 3 ] );
 		}
 } );
-
-/*!
- * jQuery UI Disable Selection 1.12.1
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-//>>label: disableSelection
-//>>group: Core
-//>>description: Disable selection of text content within the set of matched elements.
-//>>docs: http://api.jqueryui.com/disableSelection/
-
-// This file is deprecated
-
 
 var disableSelection = $.fn.extend( {
 	disableSelection: ( function() {
@@ -1295,57 +1138,23 @@ var disableSelection = $.fn.extend( {
 	}
 } );
 
-
-/*!
- * jQuery UI Effects 1.12.1
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-//>>label: Effects Core
-//>>group: Effects
-// jscs:disable maximumLineLength
-//>>description: Extends the internal jQuery effects. Includes morphing and easing. Required by all other effects.
-// jscs:enable maximumLineLength
-//>>docs: http://api.jqueryui.com/category/effects-core/
-//>>demos: http://jqueryui.com/effect/
-
-
-
 var dataSpace = "ui-effects-",
 	dataSpaceStyle = "ui-effects-style",
 	dataSpaceAnimated = "ui-effects-animated",
 
-	// Create a local jQuery because jQuery Color relies on it and the
-	// global may not exist with AMD and a custom build (#10199)
 	jQuery = $;
 
 $.effects = {
 	effect: {}
 };
 
-/*!
- * jQuery Color Animations v2.1.2
- * https://github.com/jquery/jquery-color
- *
- * Copyright 2014 jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- *
- * Date: Wed Jan 16 08:47:09 2013 -0600
- */
 ( function( jQuery, undefined ) {
 
 	var stepHooks = "backgroundColor borderBottomColor borderLeftColor borderRightColor " +
 		"borderTopColor color columnRuleColor outlineColor textDecorationColor textEmphasisColor",
 
-	// Plusequals test for += 100 -= 100
 	rplusequals = /^([\-+])=\s*(\d+\.?\d*)/,
 
-	// A set of RE's that can match strings and generate color tuples.
 	stringParsers = [ {
 			re: /rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*(\d?(?:\.\d+)?)\s*)?\)/,
 			parse: function( execResult ) {
@@ -1368,7 +1177,6 @@ $.effects = {
 			}
 		}, {
 
-			// This regex ignores A-F because it's compared against an already lowercased string
 			re: /#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})/,
 			parse: function( execResult ) {
 				return [
@@ -1379,7 +1187,6 @@ $.effects = {
 			}
 		}, {
 
-			// This regex ignores A-F because it's compared against an already lowercased string
 			re: /#([a-f0-9])([a-f0-9])([a-f0-9])/,
 			parse: function( execResult ) {
 				return [
@@ -1401,7 +1208,6 @@ $.effects = {
 			}
 		} ],
 
-	// JQuery.Color( )
 	color = jQuery.Color = function( color, green, blue, alpha ) {
 		return new jQuery.Color.fn.parse( color, green, blue, alpha );
 	},
@@ -1455,21 +1261,15 @@ $.effects = {
 	},
 	support = color.support = {},
 
-	// Element for support tests
 	supportElem = jQuery( "<p>" )[ 0 ],
 
-	// Colors = jQuery.Color.names
 	colors,
 
-	// Local aliases of functions called often
 	each = jQuery.each;
 
-// Determine rgba support immediately
 supportElem.style.cssText = "background-color:rgba(1,1,1,.5)";
 support.rgba = supportElem.style.backgroundColor.indexOf( "rgba" ) > -1;
 
-// Define cache name and alpha properties
-// for rgba and hsla spaces
 each( spaces, function( spaceName, space ) {
 	space.cache = "_" + spaceName;
 	space.props.alpha = {
@@ -1486,23 +1286,16 @@ function clamp( value, prop, allowEmpty ) {
 		return ( allowEmpty || !prop.def ) ? null : prop.def;
 	}
 
-	// ~~ is an short way of doing floor for positive numbers
 	value = type.floor ? ~~value : parseFloat( value );
 
-	// IE will pass in empty strings as value for alpha,
-	// which will hit this case
 	if ( isNaN( value ) ) {
 		return prop.def;
 	}
 
 	if ( type.mod ) {
-
-		// We add mod before modding to make sure that negatives values
-		// get converted properly: -10 -> 350
 		return ( value + type.mod ) % type.mod;
 	}
 
-	// For now all property types without mod have min and max
 	return 0 > value ? 0 : type.max < value ? type.max : value;
 }
 
@@ -1521,28 +1314,20 @@ function stringParse( string ) {
 		if ( values ) {
 			parsed = inst[ spaceName ]( values );
 
-			// If this was an rgba parse the assignment might happen twice
-			// oh well....
 			inst[ spaces[ spaceName ].cache ] = parsed[ spaces[ spaceName ].cache ];
 			rgba = inst._rgba = parsed._rgba;
 
-			// Exit each( stringParsers ) here because we matched
 			return false;
 		}
 	} );
 
-	// Found a stringParser that handled it
 	if ( rgba.length ) {
-
-		// If this came from a parsed string, force "transparent" when alpha is 0
-		// chrome, (and maybe others) return "transparent" as rgba(0,0,0,0)
 		if ( rgba.join() === "0,0,0,0" ) {
 			jQuery.extend( rgba, colors.transparent );
 		}
 		return inst;
 	}
 
-	// Named colors
 	return colors[ string ];
 }
 
@@ -1561,7 +1346,6 @@ color.fn = jQuery.extend( color.prototype, {
 			type = jQuery.type( red ),
 			rgba = this._rgba = [];
 
-		// More than 1 argument specified - assume ( red, green, blue, alpha )
 		if ( green !== undefined ) {
 			red = [ red, green, blue, alpha ];
 			type = "array";
@@ -1590,27 +1374,19 @@ color.fn = jQuery.extend( color.prototype, {
 					var cache = space.cache;
 					each( space.props, function( key, prop ) {
 
-						// If the cache doesn't exist, and we know how to convert
 						if ( !inst[ cache ] && space.to ) {
-
-							// If the value was null, we don't need to copy it
-							// if the key was alpha, we don't need to copy it either
 							if ( key === "alpha" || red[ key ] == null ) {
 								return;
 							}
 							inst[ cache ] = space.to( inst._rgba );
 						}
 
-						// This is the only case where we allow nulls for ALL properties.
-						// call clamp with alwaysAllowEmpty
 						inst[ cache ][ prop.idx ] = clamp( red[ key ], prop, true );
 					} );
 
-					// Everything defined but alpha?
 					if ( inst[ cache ] &&
 							jQuery.inArray( null, inst[ cache ].slice( 0, 3 ) ) < 0 ) {
 
-						// Use the default of 1
 						inst[ cache ][ 3 ] = 1;
 						if ( space.from ) {
 							inst._rgba = space.from( inst[ cache ] );
@@ -1667,12 +1443,10 @@ color.fn = jQuery.extend( color.prototype, {
 				endValue = end[ index ],
 				type = propTypes[ prop.type ] || {};
 
-			// If null, don't override start value
 			if ( endValue === null ) {
 				return;
 			}
 
-			// If null - use end
 			if ( startValue === null ) {
 				result[ index ] = endValue;
 			} else {
@@ -1690,7 +1464,6 @@ color.fn = jQuery.extend( color.prototype, {
 	},
 	blend: function( opaque ) {
 
-		// If we are already opaque - return ourself
 		if ( this._rgba[ 3 ] === 1 ) {
 			return this;
 		}
@@ -1723,7 +1496,6 @@ color.fn = jQuery.extend( color.prototype, {
 					v = i > 2 ? 1 : 0;
 				}
 
-				// Catch 1 and 2
 				if ( i && i < 3 ) {
 					v = Math.round( v * 100 ) + "%";
 				}
@@ -1746,7 +1518,6 @@ color.fn = jQuery.extend( color.prototype, {
 
 		return "#" + jQuery.map( rgba, function( v ) {
 
-			// Default to 0 when nulls exist
 			v = ( v || 0 ).toString( 16 );
 			return v.length === 1 ? "0" + v : v;
 		} ).join( "" );
@@ -1756,9 +1527,6 @@ color.fn = jQuery.extend( color.prototype, {
 	}
 } );
 color.fn.parse.prototype = color.fn;
-
-// Hsla conversions adapted from:
-// https://code.google.com/p/maashaack/source/browse/packages/graphics/trunk/src/graphics/colors/HUE2RGB.as?r=5021
 
 function hue2rgb( p, q, h ) {
 	h = ( h + 1 ) % 1;
@@ -1799,8 +1567,6 @@ spaces.hsla.to = function( rgba ) {
 		h = ( 60 * ( r - g ) / diff ) + 240;
 	}
 
-	// Chroma (diff) == 0 means greyscale which, by definition, saturation = 0%
-	// otherwise, saturation is based on the ratio of chroma (diff) to lightness (add)
 	if ( diff === 0 ) {
 		s = 0;
 	} else if ( l <= 0.5 ) {
@@ -1836,10 +1602,8 @@ each( spaces, function( spaceName, space ) {
 		to = space.to,
 		from = space.from;
 
-	// Makes rgba() and hsla()
 	color.fn[ spaceName ] = function( value ) {
 
-		// Generate a cache for this space if it doesn't exist
 		if ( to && !this[ cache ] ) {
 			this[ cache ] = to( this._rgba );
 		}
@@ -1869,7 +1633,6 @@ each( spaces, function( spaceName, space ) {
 		}
 	};
 
-	// Makes red() green() blue() alpha() hue() saturation() lightness()
 	each( props, function( key, prop ) {
 
 		// Alpha is included in more than one space
@@ -2157,8 +1920,6 @@ $.effects.animateClass = function( value, duration, easing, callback ) {
 				} );
 			} );
 
-			// This is guarnteed to be there if you use jQuery.speed()
-			// it also handles dequeuing the next anim...
 			o.complete.call( animated[ 0 ] );
 		} );
 	} );
@@ -4919,27 +4680,6 @@ var safeActiveElement = $.ui.safeActiveElement = function( document ) {
 	return activeElement;
 };
 
-
-/*!
- * jQuery UI Menu 1.12.1
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-//>>label: Menu
-//>>group: Widgets
-//>>description: Creates nestable menus.
-//>>docs: http://api.jqueryui.com/menu/
-//>>demos: http://jqueryui.com/menu/
-//>>css.structure: ../../themes/base/core.css
-//>>css.structure: ../../themes/base/menu.css
-//>>css.theme: ../../themes/base/theme.css
-
-
-
 var widgetsMenu = $.widget( "ui.menu", {
 	version: "1.12.1",
 	defaultElement: "<ul>",
@@ -4956,7 +4696,6 @@ var widgetsMenu = $.widget( "ui.menu", {
 		},
 		role: "menu",
 
-		// Callbacks
 		blur: null,
 		focus: null,
 		select: null
@@ -4965,8 +4704,6 @@ var widgetsMenu = $.widget( "ui.menu", {
 	_create: function() {
 		this.activeMenu = this.element;
 
-		// Flag used to prevent firing of the click handler
-		// as the event bubbles up through nested menus
 		this.mouseHandled = false;
 		this.element
 			.uniqueId()
@@ -17684,12 +17421,6 @@ $.widget( "ui.tabs", {
 				}
 			} )
 
-			// Support: IE <9
-			// Preventing the default action in mousedown doesn't prevent IE
-			// from focusing the element, so if the anchor gets focused, blur.
-			// We don't have to worry about focusing the previously focused
-			// element since clicking on a non-focusable element should focus
-			// the body anyway.
 			.on( "focus" + this.eventNamespace, ".ui-tabs-anchor", function() {
 				if ( $( this ).closest( "li" ).is( ".ui-state-disabled" ) ) {
 					this.blur();
@@ -17720,33 +17451,33 @@ $.widget( "ui.tabs", {
 				tab = $( anchor ).closest( "li" ),
 				originalAriaControls = tab.attr( "aria-controls" );
 
-			// Inline tab
 			if ( that._isLocal( anchor ) ) {
 				selector = anchor.hash;
 				panelId = selector.substring( 1 );
 				panel = that.element.find( that._sanitizeSelector( selector ) );
 
-			// remote tab
-			} else {
-
-				// If the tab doesn't already have aria-controls,
-				// generate an id by using a throw-away element
+			}
+			else {
 				panelId = tab.attr( "aria-controls" ) || $( {} ).uniqueId()[ 0 ].id;
 				selector = "#" + panelId;
 				panel = that.element.find( selector );
+
 				if ( !panel.length ) {
 					panel = that._createPanel( panelId );
 					panel.insertAfter( that.panels[ i - 1 ] || that.tablist );
 				}
+
 				panel.attr( "aria-live", "polite" );
 			}
 
 			if ( panel.length ) {
 				that.panels = that.panels.add( panel );
 			}
+
 			if ( originalAriaControls ) {
 				tab.data( "ui-tabs-aria-controls", originalAriaControls );
 			}
+
 			tab.attr( {
 				"aria-controls": panelId,
 				"aria-labelledby": anchorId
@@ -17757,7 +17488,6 @@ $.widget( "ui.tabs", {
 		this.panels.attr( "role", "tabpanel" );
 		this._addClass( this.panels, "ui-tabs-panel", "ui-widget-content" );
 
-		// Avoid memory leaks (#10056)
 		if ( prevTabs ) {
 			this._off( prevTabs.not( this.tabs ) );
 			this._off( prevAnchors.not( this.anchors ) );
@@ -17765,7 +17495,6 @@ $.widget( "ui.tabs", {
 		}
 	},
 
-	// Allow overriding how to find the list for rare usage scenarios (#7715)
 	_getList: function() {
 		return this.tablist || this.element.find( "ol, ul" ).eq( 0 );
 	},
@@ -17787,7 +17516,6 @@ $.widget( "ui.tabs", {
 			}
 		}
 
-		// Disable tabs
 		for ( i = 0; ( li = this.tabs[ i ] ); i++ ) {
 			currentItem = $( li );
 			if ( disabled === true || $.inArray( i, disabled ) !== -1 ) {
@@ -17815,7 +17543,6 @@ $.widget( "ui.tabs", {
 
 		this._off( this.anchors.add( this.tabs ).add( this.panels ) );
 
-		// Always prevent the default action, even when disabled
 		this._on( true, this.anchors, {
 			click: function( event ) {
 				event.preventDefault();
@@ -17856,7 +17583,8 @@ $.widget( "ui.tabs", {
 					$( this ).innerHeight() + $( this ).height() ) );
 			} )
 				.css( "overflow", "auto" );
-		} else if ( heightStyle === "auto" ) {
+		}
+		else if ( heightStyle === "auto" ) {
 			maxHeight = 0;
 			this.panels.each( function() {
 				maxHeight = Math.max( maxHeight, $( this ).height( "" ).height() );
@@ -17884,16 +17612,12 @@ $.widget( "ui.tabs", {
 
 		if ( tab.hasClass( "ui-state-disabled" ) ||
 
-				// tab is already loading
 				tab.hasClass( "ui-tabs-loading" ) ||
 
-				// can't switch durning an animation
 				this.running ||
 
-				// click on active header, but not collapsible
 				( clickedIsActive && !options.collapsible ) ||
 
-				// allow canceling activation
 				( this._trigger( "beforeActivate", event, eventData ) === false ) ) {
 			return;
 		}
@@ -17915,7 +17639,6 @@ $.widget( "ui.tabs", {
 		this._toggle( event, eventData );
 	},
 
-	// Handles show/hide for selecting tabs
 	_toggle: function( event, eventData ) {
 		var that = this,
 			toShow = eventData.newPanel,
@@ -17939,7 +17662,6 @@ $.widget( "ui.tabs", {
 			}
 		}
 
-		// Start out by hiding, then showing, then completing
 		if ( toHide.length && this.options.hide ) {
 			this._hide( toHide, this.options.hide, function() {
 				that._removeClass( eventData.oldTab.closest( "li" ),
@@ -17959,9 +17681,6 @@ $.widget( "ui.tabs", {
 			"aria-expanded": "false"
 		} );
 
-		// If we're switching tabs, remove the old tab from the tab order.
-		// If we're opening from collapsed state, remove the previous tab from the tab order.
-		// If we're collapsing, then keep the collapsing tab in the tab order.
 		if ( toShow.length && toHide.length ) {
 			eventData.oldTab.attr( "tabIndex", -1 );
 		} else if ( toShow.length ) {
@@ -17983,12 +17702,10 @@ $.widget( "ui.tabs", {
 		var anchor,
 			active = this._findActive( index );
 
-		// Trying to activate the already active panel
 		if ( active[ 0 ] === this.active[ 0 ] ) {
 			return;
 		}
 
-		// Trying to collapse, simulate a click on the current active header
 		if ( !active.length ) {
 			active = this.active;
 		}
@@ -18007,7 +17724,6 @@ $.widget( "ui.tabs", {
 
 	_getIndex: function( index ) {
 
-		// meta-function to give users option to provide a href string instead of a numerical index.
 		if ( typeof index === "string" ) {
 			index = this.anchors.index( this.anchors.filter( "[href$='" +
 				$.ui.escapeSelector( index ) + "']" ) );
@@ -18125,16 +17841,12 @@ $.widget( "ui.tabs", {
 				}
 			};
 
-		// Not remote
 		if ( this._isLocal( anchor[ 0 ] ) ) {
 			return;
 		}
 
 		this.xhr = $.ajax( this._ajaxSettings( anchor, event, eventData ) );
 
-		// Support: jQuery <1.8
-		// jQuery <1.8 returns false if the request is canceled in beforeSend,
-		// but as of 1.8, $.ajax() always returns a jqXHR object.
 		if ( this.xhr && this.xhr.statusText !== "canceled" ) {
 			this._addClass( tab, "ui-tabs-loading" );
 			panel.attr( "aria-busy", "true" );
@@ -18142,8 +17854,6 @@ $.widget( "ui.tabs", {
 			this.xhr
 				.done( function( response, status, jqXHR ) {
 
-					// support: jQuery <1.8
-					// http://bugs.jquery.com/ticket/11778
 					setTimeout( function() {
 						panel.html( response );
 						that._trigger( "load", event, eventData );
@@ -18153,8 +17863,6 @@ $.widget( "ui.tabs", {
 				} )
 				.fail( function( jqXHR, status ) {
 
-					// support: jQuery <1.8
-					// http://bugs.jquery.com/ticket/11778
 					setTimeout( function() {
 						complete( jqXHR, status );
 					}, 1 );
@@ -18166,8 +17874,6 @@ $.widget( "ui.tabs", {
 		var that = this;
 		return {
 
-			// Support: IE <11 only
-			// Strip any hash that exists to prevent errors with the Ajax request
 			url: anchor.attr( "href" ).replace( /#.*$/, "" ),
 			beforeSend: function( jqXHR, settings ) {
 				return that._trigger( "beforeLoad", event,
@@ -18182,11 +17888,8 @@ $.widget( "ui.tabs", {
 	}
 } );
 
-// DEPRECATED
-// TODO: Switch return back to widget declaration at top of file when this is removed
 if ( $.uiBackCompat !== false ) {
 
-	// Backcompat for ui-tab class (now ui-tabs-tab)
 	$.widget( "ui.tabs", $.ui.tabs, {
 		_processTabs: function() {
 			this._superApply( arguments );
@@ -18197,27 +17900,6 @@ if ( $.uiBackCompat !== false ) {
 
 var widgetsTabs = $.ui.tabs;
 
-
-/*!
- * jQuery UI Tooltip 1.12.1
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
-//>>label: Tooltip
-//>>group: Widgets
-//>>description: Shows additional information for any element on hover or focus.
-//>>docs: http://api.jqueryui.com/tooltip/
-//>>demos: http://jqueryui.com/tooltip/
-//>>css.structure: ../../themes/base/core.css
-//>>css.structure: ../../themes/base/tooltip.css
-//>>css.theme: ../../themes/base/theme.css
-
-
-
 $.widget( "ui.tooltip", {
 	version: "1.12.1",
 	options: {
@@ -18226,16 +17908,12 @@ $.widget( "ui.tooltip", {
 		},
 		content: function() {
 
-			// support: IE<9, Opera in jQuery <1.7
-			// .text() can't accept undefined, so coerce to a string
 			var title = $( this ).attr( "title" ) || "";
 
-			// Escape title, since we're going from an attribute to raw HTML
 			return $( "<a>" ).text( title ).html();
 		},
 		hide: true,
 
-		// Disabled elements have inconsistent behavior across browsers (#8661)
 		items: "[title]:not([disabled])",
 		position: {
 			my: "left top+15",
@@ -18245,7 +17923,6 @@ $.widget( "ui.tooltip", {
 		show: true,
 		track: false,
 
-		// Callbacks
 		close: null,
 		open: null
 	},
@@ -18320,14 +17997,12 @@ $.widget( "ui.tooltip", {
 	_disable: function() {
 		var that = this;
 
-		// Close open tooltips
 		$.each( this.tooltips, function( id, tooltipData ) {
 			var event = $.Event( "blur" );
 			event.target = event.currentTarget = tooltipData.element[ 0 ];
 			that.close( event, true );
 		} );
 
-		// Remove title attributes to prevent native tooltips
 		this.disabledTitles = this.disabledTitles.add(
 			this.element.find( this.options.items ).addBack()
 				.filter( function() {
@@ -18343,7 +18018,6 @@ $.widget( "ui.tooltip", {
 
 	_enable: function() {
 
-		// restore title attributes
 		this.disabledTitles.each( function() {
 			var element = $( this );
 			if ( element.data( "ui-tooltip-title" ) ) {
@@ -18357,11 +18031,8 @@ $.widget( "ui.tooltip", {
 		var that = this,
 			target = $( event ? event.target : this.element )
 
-				// we need closest here due to mouseover bubbling,
-				// but always pointing at the same event target
 				.closest( this.options.items );
 
-		// No element to show a tooltip for or the tooltip is already open
 		if ( !target.length || target.data( "ui-tooltip-id" ) ) {
 			return;
 		}
@@ -18372,7 +18043,6 @@ $.widget( "ui.tooltip", {
 
 		target.data( "ui-tooltip-open", true );
 
-		// Kill parent tooltips, custom or native, for hover
 		if ( event && event.type === "mouseover" ) {
 			target.parents().each( function() {
 				var parent = $( this ),
@@ -18410,20 +18080,12 @@ $.widget( "ui.tooltip", {
 
 		content = contentOption.call( target[ 0 ], function( response ) {
 
-			// IE may instantly serve a cached response for ajax requests
-			// delay this call to _open so the other call to _open runs first
 			that._delay( function() {
 
-				// Ignore async response if tooltip was closed already
 				if ( !target.data( "ui-tooltip-open" ) ) {
 					return;
 				}
 
-				// JQuery creates a special event for focusin when it doesn't
-				// exist natively. To improve performance, the native event
-				// object is reused and the type is changed. Therefore, we can't
-				// rely on the type being correct after the event finished
-				// bubbling, so we set it back to the previous value. (#8740)
 				if ( event ) {
 					event.type = eventType;
 				}
@@ -18443,21 +18105,12 @@ $.widget( "ui.tooltip", {
 			return;
 		}
 
-		// Content can be updated multiple times. If the tooltip already
-		// exists, then just update the content and bail.
 		tooltipData = this._find( target );
 		if ( tooltipData ) {
 			tooltipData.tooltip.find( ".ui-tooltip-content" ).html( content );
 			return;
 		}
 
-		// If we have a title, clear it to prevent the native tooltip
-		// we have to check first to avoid defining a title if none exists
-		// (we don't want to cause an element to start matching [title])
-		//
-		// We use removeAttr only for key events, to allow IE to export the correct
-		// accessible attributes. For mouse events, set to empty string to avoid
-		// native tooltip showing up (happens only when removing inside mouseover).
 		if ( target.is( "[title]" ) ) {
 			if ( event && event.type === "mouseover" ) {
 				target.attr( "title", "" );
@@ -18471,9 +18124,6 @@ $.widget( "ui.tooltip", {
 		this._addDescribedBy( target, tooltip.attr( "id" ) );
 		tooltip.find( ".ui-tooltip-content" ).html( content );
 
-		// Support: Voiceover on OS X, JAWS on IE <= 9
-		// JAWS announces deletions even when aria-relevant="additions"
-		// Voiceover will sometimes re-read the entire log region's contents from the beginning
 		this.liveRegion.children().hide();
 		a11yContent = $( "<div>" ).html( tooltip.find( ".ui-tooltip-content" ).html() );
 		a11yContent.removeAttr( "name" ).find( "[name]" ).removeAttr( "name" );
@@ -18492,7 +18142,6 @@ $.widget( "ui.tooltip", {
 				mousemove: position
 			} );
 
-			// trigger once to override element-relative positioning
 			position( event );
 		} else {
 			tooltip.position( $.extend( {
@@ -18504,10 +18153,6 @@ $.widget( "ui.tooltip", {
 
 		this._show( tooltip, this.options.show );
 
-		// Handle tracking tooltips that are shown with a delay (#8644). As soon
-		// as the tooltip is visible, position the tooltip using the most recent
-		// event.
-		// Adds the check to add the timers only when both delay and track options are set (#14682)
 		if ( this.options.track && this.options.show && this.options.show.delay ) {
 			delayedShow = this.delayedShow = setInterval( function() {
 				if ( tooltip.is( ":visible" ) ) {
@@ -18531,8 +18176,6 @@ $.widget( "ui.tooltip", {
 			}
 		};
 
-		// Only bind remove handler for delegated targets. Non-delegated
-		// tooltips will handle this in destroy.
 		if ( target[ 0 ] !== this.element[ 0 ] ) {
 			events.remove = function() {
 				this._removeTooltip( this._find( target ).tooltip );
@@ -18554,30 +18197,20 @@ $.widget( "ui.tooltip", {
 			target = $( event ? event.currentTarget : this.element ),
 			tooltipData = this._find( target );
 
-		// The tooltip may already be closed
 		if ( !tooltipData ) {
 
-			// We set ui-tooltip-open immediately upon open (in open()), but only set the
-			// additional data once there's actually content to show (in _open()). So even if the
-			// tooltip doesn't have full data, we always remove ui-tooltip-open in case we're in
-			// the period between open() and _open().
 			target.removeData( "ui-tooltip-open" );
 			return;
 		}
 
 		tooltip = tooltipData.tooltip;
 
-		// Disabling closes the tooltip, so we need to track when we're closing
-		// to avoid an infinite loop in case the tooltip becomes disabled on close
 		if ( tooltipData.closing ) {
 			return;
 		}
 
-		// Clear the interval for delayed tracking tooltips
 		clearInterval( this.delayedShow );
 
-		// Only set title if we had one before (see comment in _open())
-		// If the title attribute has changed since open(), don't restore
 		if ( target.data( "ui-tooltip-title" ) && !target.attr( "title" ) ) {
 			target.attr( "title", target.data( "ui-tooltip-title" ) );
 		}
@@ -18593,7 +18226,6 @@ $.widget( "ui.tooltip", {
 		target.removeData( "ui-tooltip-open" );
 		this._off( target, "mouseleave focusout keyup" );
 
-		// Remove 'remove' binding only on delegated targets
 		if ( target[ 0 ] !== this.element[ 0 ] ) {
 			this._off( target, "remove" );
 		}
@@ -18652,26 +18284,20 @@ $.widget( "ui.tooltip", {
 	_destroy: function() {
 		var that = this;
 
-		// Close open tooltips
 		$.each( this.tooltips, function( id, tooltipData ) {
-
-			// Delegate to close method to handle common cleanup
 			var event = $.Event( "blur" ),
 				element = tooltipData.element;
 			event.target = event.currentTarget = element[ 0 ];
 			that.close( event, true );
 
-			// Remove immediately; destroying an open tooltip doesn't use the
-			// hide animation
 			$( "#" + id ).remove();
 
-			// Restore the title
 			if ( element.data( "ui-tooltip-title" ) ) {
 
-				// If the title attribute has changed since open(), don't restore
 				if ( !element.attr( "title" ) ) {
 					element.attr( "title", element.data( "ui-tooltip-title" ) );
 				}
+
 				element.removeData( "ui-tooltip-title" );
 			}
 		} );
@@ -18679,11 +18305,7 @@ $.widget( "ui.tooltip", {
 	}
 } );
 
-// DEPRECATED
-// TODO: Switch return back to widget declaration at top of file when this is removed
 if ( $.uiBackCompat !== false ) {
-
-	// Backcompat for tooltipClass option
 	$.widget( "ui.tooltip", $.ui.tooltip, {
 		options: {
 			tooltipClass: null
