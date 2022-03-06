@@ -4,6 +4,15 @@
 	height: 100%;
 	position: relative;
 
+	&.owl-grab {
+		cursor: move;
+		cursor: grab;
+	}
+
+	&.owl-hidden {
+		opacity: 0;
+	}
+
 	&.owl-loaded {
 		display: block;
 	}
@@ -11,6 +20,25 @@
 	&.owl-loading {
 		opacity: 0;
 		display: block;
+	}
+
+	&.owl-refresh {
+		.owl-item {
+			visibility: hidden;
+		}
+	}
+
+	&.owl-rtl {
+		direction: rtl;
+
+		.owl-item {
+			float: right;
+		}
+	}
+
+	.owl-nav.disabled,
+	.owl-dots.disabled {
+		display: none;
 	}
 }
 
@@ -42,7 +70,10 @@
 }
 
 .owl-item {
+	float: left;
 	height: 100%;
+	min-height: 1px;
+	position: relative;
 
 	> div {
 		height: 100%;
@@ -68,6 +99,7 @@
 }
 
 .owl-next {
+	cursor: pointer;
 	right: 2%;
 
 	img {
@@ -76,6 +108,7 @@
 }
 
 .owl-prev {
+	cursor: pointer;
 	left: 2%;
 
 	img {
@@ -99,6 +132,7 @@
 .owl-stage-outer {
 	height: 100%;
 	margin: 0 auto;
+	overflow: hidden;
 	position: relative;
 	z-index: 7;
 }

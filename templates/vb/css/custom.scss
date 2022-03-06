@@ -1249,49 +1249,6 @@ ul {
 
 
 
-.owl-carousel {
-	.owl-stage-outer {
-		position: relative;
-		overflow: hidden;
-	}
 
-	.owl-nav.disabled,
-	.owl-dots.disabled {
-		display: none;
-	}
-
-	.owl-nav .owl-prev,
-	.owl-nav .owl-next,
-	.owl-dot {
-		cursor: pointer;
-	}
-
-	&.owl-hidden {
-		opacity: 0;
-	}
-
-	&.owl-refresh .owl-item {
-		visibility: hidden;
-	}
-
-	&.owl-grab {
-		cursor: move;
-		cursor: grab;
-	}
-
-	&.owl-rtl {
-		direction: rtl;
-	}
-
-	&.owl-rtl .owl-item {
-		float: right;
-	}
-}
-
-.owl-item {
-	position: relative;
-	min-height: 1px;
-	float: left;
-}
 
 
