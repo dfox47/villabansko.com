@@ -1,15 +1,22 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\HTML\HTMLHelper as JHtml;
+use Joomla\CMS\Language\Text as JText;
+use Joomla\Registry\Registry;
+use RegularLabs\Library\Field;
+use RegularLabs\Library\RegEx as RL_RegEx;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -18,26 +25,11 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-use Joomla\Registry\Registry;
-use RegularLabs\Library\RegEx as RL_RegEx;
-
-class JFormFieldRL_Components extends \RegularLabs\Library\Field
+class JFormFieldRL_Components extends Field
 {
 	public $type = 'Components';
 
-	protected function getInput()
-	{
-		$this->params = $this->element->attributes();
-
-		$size = (int) $this->get('size');
-
-		return $this->selectListSimpleAjax(
-			$this->type, $this->name, $this->value, $this->id,
-			compact('size')
-		);
-	}
-
-	function getAjaxRaw(Registry $attributes)
+	public function getAjaxRaw(Registry $attributes)
 	{
 		$name  = $attributes->get('name', $this->type);
 		$id    = $attributes->get('id', strtolower($name));
@@ -46,10 +38,10 @@ class JFormFieldRL_Components extends \RegularLabs\Library\Field
 
 		$options = $this->getComponents();
 
-		return $this->selectListSimple($options, $name, $value, $id, $size, true);
+		return $this->selectListSimple($options, $name, $value, $id, $size, true, true);
 	}
 
-	function getComponents()
+	public function getComponents()
 	{
 		$frontend = $this->get('frontend', 1);
 		$admin    = $this->get('admin', 1);
@@ -84,6 +76,11 @@ class JFormFieldRL_Components extends \RegularLabs\Library\Field
 			}
 
 			$component_folder = ($frontend ? JPATH_SITE : JPATH_ADMINISTRATOR) . '/components/' . $component->element;
+
+			if ( ! JFolder::exists($component_folder) && $admin)
+			{
+				$component_folder = JPATH_ADMINISTRATOR . '/components/' . $component->element;
+			}
 
 			// return if there is no main component folder
 			if ( ! JFolder::exists($component_folder))
@@ -122,5 +119,15 @@ class JFormFieldRL_Components extends \RegularLabs\Library\Field
 		}
 
 		return $options;
+	}
+
+	protected function getInput()
+	{
+		$size = (int) $this->get('size');
+
+		return $this->selectListSimpleAjax(
+			$this->type, $this->name, $this->value, $this->id,
+			compact('size')
+		);
 	}
 }

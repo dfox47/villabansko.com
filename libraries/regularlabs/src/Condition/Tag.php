@@ -1,15 +1,17 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 namespace RegularLabs\Library\Condition;
+
+use RegularLabs\Library\Condition;
 
 defined('_JEXEC') or die;
 
@@ -17,11 +19,15 @@ defined('_JEXEC') or die;
  * Class Tag
  * @package RegularLabs\Library\Condition
  */
-class Tag
-	extends \RegularLabs\Library\Condition
+class Tag extends Condition
 {
 	public function pass()
 	{
+		if ( ! $this->request->id)
+		{
+			return $this->_(false);
+		}
+
 		if (in_array($this->request->option, ['com_content', 'com_flexicontent']))
 		{
 			return $this->passTagsContent();
@@ -29,7 +35,6 @@ class Tag
 
 		if ($this->request->option != 'com_tags'
 			|| $this->request->view != 'tag'
-			|| ! $this->request->id
 		)
 		{
 			return $this->_(false);
@@ -66,7 +71,7 @@ class Tag
 				'INNER', '#__contentitem_tag_map AS m'
 				. ' ON m.tag_id = t.id'
 				. ' AND m.type_alias = ' . $this->db->quote($prefix)
-				. ' AND m.content_item_id = ' . $this->request->id
+				. ' AND m.content_item_id = ' . (int) $this->request->id
 			);
 		$this->db->setQuery($query);
 		$tags = $this->db->loadObjectList();
@@ -77,26 +82,6 @@ class Tag
 		}
 
 		return $this->_($this->passTagList($tags));
-	}
-
-	private function passTagList($tags)
-	{
-		if ($this->params->match_all)
-		{
-			return $this->passTagListMatchAll($tags);
-		}
-
-		foreach ($tags as $tag)
-		{
-			if ( ! $this->passTag($tag->id) && ! $this->passTag($tag->title))
-			{
-				continue;
-			}
-
-			return true;
-		}
-
-		return false;
 	}
 
 	private function passTag($tag)
@@ -120,6 +105,26 @@ class Tag
 			$this->getTagsParentIds($tag),
 			$this->selection
 		);
+	}
+
+	private function passTagList($tags)
+	{
+		if ($this->params->match_all)
+		{
+			return $this->passTagListMatchAll($tags);
+		}
+
+		foreach ($tags as $tag)
+		{
+			if ( ! $this->passTag($tag->id) && ! $this->passTag($tag->title))
+			{
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private function getTagsParentIds($id = 0)

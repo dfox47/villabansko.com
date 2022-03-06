@@ -1,15 +1,18 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Language\Text as JText;
+use RegularLabs\Library\Field;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -18,7 +21,7 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-class JFormFieldRL_Note extends \RegularLabs\Library\Field
+class JFormFieldRL_Note extends Field
 {
 	public $type = 'Note';
 
@@ -33,6 +36,11 @@ class JFormFieldRL_Note extends \RegularLabs\Library\Field
 		return parent::setup($element, $value, $group);
 	}
 
+	protected function getInput()
+	{
+		return '';
+	}
+
 	protected function getLabel()
 	{
 		if (empty($this->element['label']) && empty($this->element['description']))
@@ -43,25 +51,43 @@ class JFormFieldRL_Note extends \RegularLabs\Library\Field
 		$title       = $this->element['label'] ? (string) $this->element['label'] : ($this->element['title'] ? (string) $this->element['title'] : '');
 		$heading     = $this->element['heading'] ? (string) $this->element['heading'] : 'h4';
 		$description = (string) $this->element['description'];
-		$class       = ! empty($this->class) ? ' class="' . $this->class . '"' : '';
+		$class       = $this->class ?? '';
 		$close       = (string) $this->element['close'];
+		$controls    = (int) $this->element['controls'];
 
-		$html = [];
+		$class = ! empty($class) ? ' class="' . $class . '"' : '';
+
+		$button      = '';
+		$title       = JText::_($title ?? '');
+		$description = JText::_($description ?? '');
 
 		if ($close)
 		{
 			$close  = $close == 'true' ? 'alert' : $close;
-			$html[] = '<button type="button" class="close" data-dismiss="' . $close . '">&times;</button>';
+			$button = '<button type="button" class="close" data-dismiss="' . $close . '" aria-label="Close">&times;</button>';
 		}
 
-		$html[] = ! empty($title) ? '<' . $heading . '>' . JText::_($title) . '</' . $heading . '>' : '';
-		$html[] = ! empty($description) ? JText::_($description) : '';
+		if ($heading && $title)
+		{
+			$title = '<' . $heading . '>'
+				. $title
+				. '</' . $heading . '>';
+		}
 
-		return '</div><div ' . $class . '>' . implode('', $html);
-	}
+		if ($controls)
+		{
+			$title = '<div class="control-label"><label>'
+				. $title
+				. '</label></div>';
 
-	protected function getInput()
-	{
-		return '';
+			$description = '<div class="controls">'
+				. $description
+				. '</div>';
+		}
+
+		return '</div><div ' . $class . '>'
+			. $button
+			. $title
+			. $description;
 	}
 }

@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,27 +13,81 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/assignment.php';
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel as JModel;
+use Joomla\CMS\Table\Table as JTable;
+
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 class RLAssignmentsContent extends RLAssignment
 {
-	public function passPageTypes()
+	public function getItem($fields = [])
 	{
-		$components = ['com_content', 'com_contentsubmit'];
-		if ( ! in_array($this->request->option, $components))
+		if ($this->article)
+		{
+			return $this->article;
+		}
+
+		if ( ! class_exists('ContentModelArticle'))
+		{
+			require_once JPATH_SITE . '/components/com_content/models/article.php';
+		}
+
+		$model = JModel::getInstance('article', 'contentModel');
+
+		if ( ! method_exists($model, 'getItem'))
+		{
+			return null;
+		}
+
+		$this->article = $model->getItem($this->request->id);
+
+		return $this->article;
+	}
+
+	public function passArticles()
+	{
+		if ( ! $this->request->id
+			|| ! (($this->request->option == 'com_content' && $this->request->view == 'article')
+				|| ($this->request->option == 'com_flexicontent' && $this->request->view == 'item')
+			)
+		)
 		{
 			return $this->pass(false);
 		}
-		if ($this->request->view == 'category' && $this->request->layout == 'blog')
+
+		$pass = false;
+
+		// Pass Article Id
+		if ( ! $this->passItemByType($pass, 'ContentIds'))
 		{
-			$view = 'categoryblog';
-		}
-		else
-		{
-			$view = $this->request->view;
+			return $this->pass(false);
 		}
 
-		return $this->passSimple($view);
+		// Pass Content Keywords
+		if ( ! $this->passItemByType($pass, 'ContentKeywords'))
+		{
+			return $this->pass(false);
+		}
+
+		// Pass Meta Keywords
+		if ( ! $this->passItemByType($pass, 'MetaKeywords'))
+		{
+			return $this->pass(false);
+		}
+
+		// Pass Authors
+		if ( ! $this->passItemByType($pass, 'Authors'))
+		{
+			return $this->pass(false);
+		}
+
+		return $this->pass($pass);
 	}
 
 	public function passCategories()
@@ -159,78 +213,33 @@ class RLAssignmentsContent extends RLAssignment
 		{
 			$menuparams = $this->getMenuItemParams($this->request->Itemid);
 
-			return isset($menuparams->featured_categories) ? (array) $menuparams->featured_categories : (array) $catid;
+			return (array) ($menuparams->featured_categories ?? $catid);
 		}
 
-		return isset($menuparams->catid) ? (array) $menuparams->catid : (array) $catid;
-	}
-
-	public function passArticles()
-	{
-		if ( ! $this->request->id
-			|| ! (($this->request->option == 'com_content' && $this->request->view == 'article')
-				|| ($this->request->option == 'com_flexicontent' && $this->request->view == 'item')
-			)
-		)
-		{
-			return $this->pass(false);
-		}
-
-		$pass = false;
-
-		// Pass Article Id
-		if ( ! $this->passItemByType($pass, 'ContentIds'))
-		{
-			return $this->pass(false);
-		}
-
-		// Pass Content Keywords
-		if ( ! $this->passItemByType($pass, 'ContentKeywords'))
-		{
-			return $this->pass(false);
-		}
-
-		// Pass Meta Keywords
-		if ( ! $this->passItemByType($pass, 'MetaKeywords'))
-		{
-			return $this->pass(false);
-		}
-
-		// Pass Authors
-		if ( ! $this->passItemByType($pass, 'Authors'))
-		{
-			return $this->pass(false);
-		}
-
-		return $this->pass($pass);
-	}
-
-	public function getItem($fields = [])
-	{
-		if ($this->article)
-		{
-			return $this->article;
-		}
-
-		if ( ! class_exists('ContentModelArticle'))
-		{
-			require_once JPATH_SITE . '/components/com_content/models/article.php';
-		}
-
-		$model = JModelLegacy::getInstance('article', 'contentModel');
-
-		if ( ! method_exists($model, 'getItem'))
-		{
-			return null;
-		}
-
-		$this->article = $model->getItem($this->request->id);
-
-		return $this->article;
+		return (array) ($menuparams->catid ?? $catid);
 	}
 
 	private function getCatParentIds($id = 0)
 	{
 		return $this->getParentIds($id, 'categories');
+	}
+
+	public function passPageTypes()
+	{
+		$components = ['com_content', 'com_contentsubmit'];
+		if ( ! in_array($this->request->option, $components))
+		{
+			return $this->pass(false);
+		}
+		if ($this->request->view == 'category' && $this->request->layout == 'blog')
+		{
+			$view = 'categoryblog';
+		}
+		else
+		{
+			$view = $this->request->view;
+		}
+
+		return $this->passSimple($view);
 	}
 }

@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,7 +13,7 @@ namespace RegularLabs\Plugin\System\RegularLabs;
 
 defined('_JEXEC') or die;
 
-use RegularLabs\Library\Parameters as RL_Parameters;
+use RegularLabs\Library\ParametersNew as RL_Parameters;
 
 class Params
 {
@@ -26,7 +26,7 @@ class Params
 			return self::$params;
 		}
 
-		self::$params = RL_Parameters::getInstance()->getPluginParams('regularlabs');
+		self::$params = RL_Parameters::getPlugin('regularlabs');
 
 		return self::$params;
 	}

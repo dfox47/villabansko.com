@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -14,9 +14,9 @@ namespace RegularLabs\Library;
 defined('_JEXEC') or die;
 
 use Exception;
-use JHtml;
-use JText;
+use Joomla\CMS\Language\Text as JText;
 use ReflectionClass;
+use RegularLabs\Library\ParametersNew as Parameters;
 
 /**
  * Class EditorButtonPopup
@@ -31,7 +31,7 @@ class EditorButtonPopup
 	public function __construct($extension)
 	{
 		$this->extension = $extension;
-		$this->params    = Parameters::getInstance()->getPluginParams($extension);
+		$this->params    = Parameters::getPlugin($extension);
 	}
 
 	public function render()
@@ -50,10 +50,23 @@ class EditorButtonPopup
 		$this->loadLibraryScriptsStyles();
 
 		$this->loadLanguages();
+
+		Document::style('regularlabs/popup.min.css');
+
 		$this->loadScripts();
 		$this->loadStyles();
 
 		echo $this->renderTemplate();
+	}
+
+	private function loadLibraryLanguages()
+	{
+		Language::load('plg_system_regularlabs');
+	}
+
+	private function loadLibraryScriptsStyles()
+	{
+		Document::loadPopupDependencies();
 	}
 
 	public function loadLanguages()
@@ -70,20 +83,6 @@ class EditorButtonPopup
 	{
 	}
 
-	private function loadLibraryLanguages()
-	{
-		Language::load('plg_system_regularlabs');
-	}
-
-	private function loadLibraryScriptsStyles()
-	{
-		JHtml::_('jquery.framework');
-
-		Document::script('regularlabs/script.min.js');
-		Document::style('regularlabs/popup.min.css');
-		Document::style('regularlabs/style.min.css');
-	}
-
 	private function renderTemplate()
 	{
 		ob_start();
@@ -96,6 +95,7 @@ class EditorButtonPopup
 
 	private function getDir()
 	{
+		// use static::class instead of get_class($this) after php 5.4 support is dropped
 		$rc = new ReflectionClass(get_class($this));
 
 		return dirname($rc->getFileName());

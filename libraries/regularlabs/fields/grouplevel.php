@@ -1,15 +1,19 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Language\Text as JText;
+use Joomla\Registry\Registry;
+use RegularLabs\Library\Field;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -18,28 +22,11 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-use Joomla\Registry\Registry;
-
-class JFormFieldRL_GroupLevel extends \RegularLabs\Library\Field
+class JFormFieldRL_GroupLevel extends Field
 {
 	public $type = 'GroupLevel';
 
-	protected function getInput()
-	{
-		$this->params = $this->element->attributes();
-
-		$size      = (int) $this->get('size');
-		$multiple  = $this->get('multiple');
-		$show_all  = $this->get('show_all');
-		$use_names = $this->get('use_names');
-
-		return $this->selectListAjax(
-			$this->type, $this->name, $this->value, $this->id,
-			compact('size', 'multiple', 'show_all', 'use_names')
-		);
-	}
-
-	function getAjaxRaw(Registry $attributes)
+	public function getAjaxRaw(Registry $attributes)
 	{
 		$name     = $attributes->get('name', $this->type);
 		$id       = $attributes->get('id', strtolower($name));
@@ -85,5 +72,18 @@ class JFormFieldRL_GroupLevel extends \RegularLabs\Library\Field
 		$this->db->setQuery($query);
 
 		return $this->db->loadObjectList();
+	}
+
+	protected function getInput()
+	{
+		$size      = (int) $this->get('size');
+		$multiple  = $this->get('multiple');
+		$show_all  = $this->get('show_all');
+		$use_names = $this->get('use_names');
+
+		return $this->selectListAjax(
+			$this->type, $this->name, $this->value, $this->id,
+			compact('size', 'multiple', 'show_all', 'use_names')
+		);
 	}
 }

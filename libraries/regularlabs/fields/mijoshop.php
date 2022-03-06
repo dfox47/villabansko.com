@@ -1,13 +1,15 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
+
+use RegularLabs\Library\FieldGroup;
 
 defined('_JEXEC') or die;
 
@@ -18,31 +20,13 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-class JFormFieldRL_MijoShop extends \RegularLabs\Library\FieldGroup
+class JFormFieldRL_MijoShop extends FieldGroup
 {
-	public $type        = 'MijoShop';
-	public $store_id    = 0;
 	public $language_id = 1;
+	public $store_id    = 0;
+	public $type        = 'MijoShop';
 
-	protected function getInput()
-	{
-		if ($error = $this->missingFilesOrTables(['categories' => 'category', 'products' => 'product']))
-		{
-			return $error;
-		}
-
-		if ( ! class_exists('MijoShop'))
-		{
-			require_once(JPATH_ROOT . '/components/com_mijoshop/mijoshop/mijoshop.php');
-		}
-
-		$this->store_id    = (int) MijoShop::get('opencart')->get('config')->get('config_store_id');
-		$this->language_id = (int) MijoShop::get('opencart')->get('config')->get('config_language_id');
-
-		return $this->getSelectList();
-	}
-
-	function getCategories()
+	public function getCategories()
 	{
 		$query = $this->db->getQuery(true)
 			->select('COUNT(*)')
@@ -70,7 +54,7 @@ class JFormFieldRL_MijoShop extends \RegularLabs\Library\FieldGroup
 		return $this->getOptionsTreeByList($items);
 	}
 
-	function getProducts()
+	public function getProducts()
 	{
 		$query = $this->db->getQuery(true)
 			->select('COUNT(*)')
@@ -101,5 +85,24 @@ class JFormFieldRL_MijoShop extends \RegularLabs\Library\FieldGroup
 		$list = $this->db->loadObjectList();
 
 		return $this->getOptionsByList($list, ['model', 'cat', 'id']);
+	}
+
+	protected function getInput()
+	{
+		$error = $this->missingFilesOrTables(['categories' => 'category', 'products' => 'product']);
+		if ($error)
+		{
+			return $error;
+		}
+
+		if ( ! class_exists('MijoShop'))
+		{
+			require_once(JPATH_ROOT . '/components/com_mijoshop/mijoshop/mijoshop.php');
+		}
+
+		$this->store_id    = (int) MijoShop::get('opencart')->get('config')->get('config_store_id');
+		$this->language_id = (int) MijoShop::get('opencart')->get('config')->get('config_language_id');
+
+		return $this->getSelectList();
 	}
 }

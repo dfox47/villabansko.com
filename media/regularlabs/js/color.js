@@ -1,10 +1,10 @@
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -184,7 +184,7 @@ if (jQuery) (function($) {
 		}
 
 		// Disable textfield
-		if (!settings.textfield) input.addClass('minicolors-hidden');
+		if ( ! settings.textfield) input.addClass('minicolors-hidden');
 
 		// Inline controls
 		if (settings.inline) input.parent().addClass('minicolors-inline');
@@ -224,7 +224,7 @@ if (jQuery) (function($) {
 			settings   = input.data('minicolors-settings');
 
 		// Do nothing if uninitialized, disabled, or already open
-		if (!input.data('minicolors-initialized') || input.prop('disabled') || minicolors.hasClass('minicolors-focus')) return;
+		if ( ! input.data('minicolors-initialized') || input.prop('disabled') || minicolors.hasClass('minicolors-focus')) return;
 
 		hide();
 
@@ -328,7 +328,7 @@ if (jQuery) (function($) {
 		function getCoords(picker, container) {
 
 			var left, top;
-			if (!picker.length || !container) return null;
+			if ( ! picker.length || ! container) return null;
 			left = picker.offset().left;
 			top  = picker.offset().top;
 
@@ -505,11 +505,11 @@ if (jQuery) (function($) {
 
 		// Determine hex/HSB values
 		hex = convertCase(parseHex(input.val(), true), settings.letterCase);
-		if (!hex) hex = convertCase(parseHex(settings.defaultValue, true));
+		if ( ! hex) hex = convertCase(parseHex(settings.defaultValue, true));
 		hsb = hex2hsb(hex);
 
 		// Update input value
-		if (!preserveInputValue) input.val(hex);
+		if ( ! preserveInputValue) input.val(hex);
 
 		// Determine opacity value
 		if (settings.opacity) {
@@ -611,7 +611,7 @@ if (jQuery) (function($) {
 		var hex     = parseHex($(input).val(), true),
 			rgb     = hex2rgb(hex),
 			opacity = $(input).attr('data-opacity');
-		if (!rgb) return null;
+		if ( ! rgb) return null;
 		if (opacity !== undefined) $.extend(rgb, {a: parseFloat(opacity)});
 		return rgb;
 	}
@@ -621,7 +621,7 @@ if (jQuery) (function($) {
 		var hex     = parseHex($(input).val(), true),
 			rgb     = hex2rgb(hex),
 			opacity = $(input).attr('data-opacity');
-		if (!rgb) return null;
+		if ( ! rgb) return null;
 		if (opacity === undefined) opacity = 1;
 		if (alpha) {
 			return 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', ' + parseFloat(opacity) + ')';
@@ -669,33 +669,27 @@ if (jQuery) (function($) {
 				rgb.r = t1;
 				rgb.b = t2;
 				rgb.g = t2 + t3;
-			}
-			else if (h < 120) {
+			} else if (h < 120) {
 				rgb.g = t1;
 				rgb.b = t2;
 				rgb.r = t1 - t3;
-			}
-			else if (h < 180) {
+			} else if (h < 180) {
 				rgb.g = t1;
 				rgb.r = t2;
 				rgb.b = t2 + t3;
-			}
-			else if (h < 240) {
+			} else if (h < 240) {
 				rgb.b = t1;
 				rgb.r = t2;
 				rgb.g = t1 - t3;
-			}
-			else if (h < 300) {
+			} else if (h < 300) {
 				rgb.b = t1;
 				rgb.g = t2;
 				rgb.r = t2 + t3;
-			}
-			else if (h < 360) {
+			} else if (h < 360) {
 				rgb.r = t1;
 				rgb.g = t2;
 				rgb.b = t1 - t3;
-			}
-			else {
+			} else {
 				rgb.r = 0;
 				rgb.g = 0;
 				rgb.b = 0;
@@ -773,9 +767,9 @@ if (jQuery) (function($) {
 
 	// Handle events
 	$(document)
-	// Hide on clicks outside of the control
+		// Hide on clicks outside of the control
 		.on('mousedown.minicolors touchstart.minicolors', function(event) {
-			if (!$(event.target).parents().add(event.target).hasClass('minicolors')) {
+			if ( ! $(event.target).parents().add(event.target).hasClass('minicolors')) {
 				hide();
 			}
 		})
@@ -808,14 +802,14 @@ if (jQuery) (function($) {
 		// Show on focus
 		.on('focus.minicolors', '.minicolors-input', function() {
 			var input = $(this);
-			if (!input.data('minicolors-initialized')) return;
+			if ( ! input.data('minicolors-initialized')) return;
 			show(input);
 		})
 		// Fix hex and hide on blur
 		.on('blur.minicolors', '.minicolors-input', function() {
 			var input    = $(this),
 				settings = input.data('minicolors-settings');
-			if (!input.data('minicolors-initialized')) return;
+			if ( ! input.data('minicolors-initialized')) return;
 
 			// Parse Hex
 			input.val(parseHex(input.val(), true));
@@ -831,7 +825,7 @@ if (jQuery) (function($) {
 		// Handle keypresses
 		.on('keydown.minicolors', '.minicolors-input', function(event) {
 			var input = $(this);
-			if (!input.data('minicolors-initialized')) return;
+			if ( ! input.data('minicolors-initialized')) return;
 			switch (event.keyCode) {
 				case 9: // tab
 					hide();
@@ -845,13 +839,13 @@ if (jQuery) (function($) {
 		// Update on keyup
 		.on('keyup.minicolors', '.minicolors-input', function() {
 			var input = $(this);
-			if (!input.data('minicolors-initialized')) return;
+			if ( ! input.data('minicolors-initialized')) return;
 			updateFromInput(input, true);
 		})
 		// Update on paste
 		.on('paste.minicolors', '.minicolors-input', function() {
 			var input = $(this);
-			if (!input.data('minicolors-initialized')) return;
+			if ( ! input.data('minicolors-initialized')) return;
 			setTimeout(function() {
 				updateFromInput(input, true);
 			}, 1);

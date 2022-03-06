@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,16 +13,28 @@ namespace RegularLabs\Library\Condition;
 
 defined('_JEXEC') or die;
 
-use JFactory;
+use Joomla\CMS\Factory as JFactory;
+use RegularLabs\Library\Condition;
+use RegularLabs\Library\ConditionContent;
 
 /**
  * Class Zoo
  * @package RegularLabs\Library\Condition
  */
-abstract class Zoo
-	extends \RegularLabs\Library\Condition
+abstract class Zoo extends Condition
 {
-	use \RegularLabs\Library\ConditionContent;
+	use ConditionContent;
+
+	public function getItem($fields = [])
+	{
+		$query = $this->db->getQuery(true)
+			->select($fields)
+			->from('#__zoo_item')
+			->where('id = ' . (int) $this->request->id);
+		$this->db->setQuery($query);
+
+		return $this->db->loadObject();
+	}
 
 	public function initRequest(&$request)
 	{
@@ -54,17 +66,20 @@ abstract class Zoo
 		}
 
 		$request->id = JFactory::getApplication()->input->getInt($request->idname, 0);
-	}
 
-	public function getItem($fields = [])
-	{
-		$query = $this->db->getQuery(true)
-			->select($fields)
-			->from('#__zoo_item')
-			->where('id = ' . (int) $this->request->id);
-		$this->db->setQuery($query);
+		if ($request->id)
+		{
+			return;
+		}
 
-		return $this->db->loadObject();
+		$menu = JFactory::getApplication()->getMenu()->getItem((int) $request->Itemid);
+
+		if (empty($menu))
+		{
+			return;
+		}
+
+		$request->id = $menu->getParams()->get('item_id', 0);
 	}
 
 }

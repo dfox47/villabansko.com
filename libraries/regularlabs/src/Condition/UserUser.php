@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,17 +13,18 @@ namespace RegularLabs\Library\Condition;
 
 defined('_JEXEC') or die;
 
-use JFactory;
+use Joomla\CMS\Factory as JFactory;
 
 /**
  * Class UserUser
  * @package RegularLabs\Library\Condition
  */
-class UserUser
-	extends User
+class UserUser extends User
 {
 	public function pass()
 	{
-		return $this->passSimple(JFactory::getUser()->get('id'));
+		$user = JFactory::getApplication()->getIdentity() ?: JFactory::getUser();
+
+		return $this->passSimple($user->get('id'));
 	}
 }

@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -17,8 +17,7 @@ defined('_JEXEC') or die;
  * Class ContentArticle
  * @package RegularLabs\Library\Condition
  */
-class ContentArticle
-	extends Content
+class ContentArticle extends Content
 {
 	public function pass()
 	{
@@ -39,6 +38,12 @@ class ContentArticle
 			return $this->_(false);
 		}
 
+		// Pass Featured
+		if ( ! $this->passItemByType($pass, 'Featured'))
+		{
+			return $this->_(false);
+		}
+
 		// Pass Content Keywords
 		if ( ! $this->passItemByType($pass, 'ContentKeyword'))
 		{
@@ -53,6 +58,18 @@ class ContentArticle
 
 		// Pass Author
 		if ( ! $this->passItemByType($pass, 'Author'))
+		{
+			return $this->_(false);
+		}
+
+		// Pass Date
+		if ( ! $this->passItemByType($pass, 'Date'))
+		{
+			return $this->_(false);
+		}
+
+		// Pass Fields
+		if ( ! $this->passItemByType($pass, 'Field'))
 		{
 			return $this->_(false);
 		}

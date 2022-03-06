@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,12 +13,19 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/assignment.php';
+use Joomla\CMS\Factory as JFactory;
+
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 class RLAssignmentsDateTime extends RLAssignment
 {
-	var $timezone = null;
 	var $dates    = [];
+	var $timezone = null;
 
 	public function passDate()
 	{
@@ -28,7 +35,7 @@ class RLAssignmentsDateTime extends RLAssignment
 			return ($this->assignment == 'include');
 		}
 
-		require_once dirname(__DIR__) . '/text.php';
+		require_once dirname(__FILE__, 2) . '/text.php';
 
 		RLText::fixDate($this->params->publish_up);
 		RLText::fixDate($this->params->publish_down);
@@ -89,18 +96,40 @@ class RLAssignmentsDateTime extends RLAssignment
 		return ($this->assignment == 'include');
 	}
 
-	public function passSeasons()
+	private function getNow()
 	{
-		$season = self::getSeason($this->date, $this->params->hemisphere);
-
-		return $this->passSimple($season);
+		return strtotime($this->date->format('Y-m-d H:i:s', true));
 	}
 
-	public function passMonths()
+	private function getDate($date = '')
 	{
-		$month = $this->date->format('m', true); // 01 (for January) through 12 (for December)
+		$id = 'date_' . $date;
 
-		return $this->passSimple((int) $month);
+		if (isset($this->dates[$id]))
+		{
+			return $this->dates[$id];
+		}
+
+		$this->dates[$id] = JFactory::getDate($date);
+
+		if (empty($this->params->ignore_time_zone))
+		{
+			$this->dates[$id]->setTimeZone($this->getTimeZone());
+		}
+
+		return $this->dates[$id];
+	}
+
+	private function getTimeZone()
+	{
+		if ( ! is_null($this->timezone))
+		{
+			return $this->timezone;
+		}
+
+		$this->timezone = new DateTimeZone(JFactory::getApplication()->getCfg('offset'));
+
+		return $this->timezone;
 	}
 
 	public function passDays()
@@ -110,36 +139,18 @@ class RLAssignmentsDateTime extends RLAssignment
 		return $this->passSimple($day);
 	}
 
-	public function passTime()
+	public function passMonths()
 	{
-		$now  = $this->getNow();
-		$up   = strtotime($this->date->format('Y-m-d ', true) . $this->params->publish_up);
-		$down = strtotime($this->date->format('Y-m-d ', true) . $this->params->publish_down);
+		$month = $this->date->format('m', true); // 01 (for January) through 12 (for December)
 
-		if ($up > $down)
-		{
-			// publish up is after publish down (spans midnight)
-			// current time should be:
-			// - after publish up
-			// - OR before publish down
-			if ($now >= $up || $now < $down)
-			{
-				return $this->pass(true);
-			}
+		return $this->passSimple((int) $month);
+	}
 
-			return $this->pass(false);
-		}
+	public function passSeasons()
+	{
+		$season = self::getSeason($this->date, $this->params->hemisphere);
 
-		// publish down is after publish up (simple time span)
-		// current time should be:
-		// - after publish up
-		// - AND before publish down
-		if ($now >= $up && $now < $down)
-		{
-			return $this->pass(true);
-		}
-
-		return $this->pass(false);
+		return $this->passSimple($season);
 	}
 
 	private function getSeason(&$d, $hemisphere = 'northern')
@@ -233,39 +244,35 @@ class RLAssignmentsDateTime extends RLAssignment
 		return 0;
 	}
 
-	private function getNow()
+	public function passTime()
 	{
-		return strtotime($this->date->format('Y-m-d H:i:s', true));
-	}
+		$now  = $this->getNow();
+		$up   = strtotime($this->date->format('Y-m-d ', true) . $this->params->publish_up);
+		$down = strtotime($this->date->format('Y-m-d ', true) . $this->params->publish_down);
 
-	private function getDate($date = '')
-	{
-		$id = 'date_' . $date;
-
-		if (isset($this->dates[$id]))
+		if ($up > $down)
 		{
-			return $this->dates[$id];
+			// publish up is after publish down (spans midnight)
+			// current time should be:
+			// - after publish up
+			// - OR before publish down
+			if ($now >= $up || $now < $down)
+			{
+				return $this->pass(true);
+			}
+
+			return $this->pass(false);
 		}
 
-		$this->dates[$id] = JFactory::getDate($date);
-
-		if (empty($this->params->ignore_time_zone))
+		// publish down is after publish up (simple time span)
+		// current time should be:
+		// - after publish up
+		// - AND before publish down
+		if ($now >= $up && $now < $down)
 		{
-			$this->dates[$id]->setTimeZone($this->getTimeZone());
+			return $this->pass(true);
 		}
 
-		return $this->dates[$id];
-	}
-
-	private function getTimeZone()
-	{
-		if ( ! is_null($this->timezone))
-		{
-			return $this->timezone;
-		}
-
-		$this->timezone = new DateTimeZone(JFactory::getApplication()->getCfg('offset'));
-
-		return $this->timezone;
+		return $this->pass(false);
 	}
 }

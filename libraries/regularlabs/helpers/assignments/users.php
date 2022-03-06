@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,47 +13,26 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/assignment.php';
+use Joomla\CMS\Factory as JFactory;
+
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 class RLAssignmentsUsers extends RLAssignment
 {
 	public function passAccessLevels()
 	{
-		$user = JFactory::getUser();
+		$user = JFactory::getApplication()->getIdentity() ?: JFactory::getUser();
 
 		$levels = $user->getAuthorisedViewLevels();
 
 		$this->selection = $this->convertAccessLevelNamesToIds($this->selection);
 
 		return $this->passSimple($levels);
-	}
-
-	public function passUserGroupLevels()
-	{
-		$user = JFactory::getUser();
-
-		if ( ! empty($user->groups))
-		{
-			$groups = array_values($user->groups);
-		}
-		else
-		{
-			$groups = $user->getAuthorisedGroups();
-		}
-
-		if ($this->params->inc_children)
-		{
-			$this->setUserGroupChildrenIds();
-		}
-
-		$this->selection = $this->convertUsergroupNamesToIds($this->selection);
-
-		return $this->passSimple($groups);
-	}
-
-	public function passUsers()
-	{
-		return $this->passSimple(JFactory::getUser()->get('id'));
 	}
 
 	private function convertAccessLevelNamesToIds($selection)
@@ -85,6 +64,43 @@ class RLAssignmentsUsers extends RLAssignment
 		return array_unique(array_merge($selection, $level_ids));
 	}
 
+	public function passUserGroupLevels()
+	{
+		$user = JFactory::getApplication()->getIdentity() ?: JFactory::getUser();
+
+		if ( ! empty($user->groups))
+		{
+			$groups = array_values($user->groups);
+		}
+		else
+		{
+			$groups = $user->getAuthorisedGroups();
+		}
+
+		if ($this->params->inc_children)
+		{
+			$this->setUserGroupChildrenIds();
+		}
+
+		$this->selection = $this->convertUsergroupNamesToIds($this->selection);
+
+		return $this->passSimple($groups);
+	}
+
+	private function setUserGroupChildrenIds()
+	{
+		$children = $this->getUserGroupChildrenIds($this->selection);
+
+		if ($this->params->inc_children == 2)
+		{
+			$this->selection = $children;
+
+			return;
+		}
+
+		$this->selection = array_merge($this->selection, $children);
+	}
+
 	private function convertUsergroupNamesToIds($selection)
 	{
 		$names = [];
@@ -112,20 +128,6 @@ class RLAssignmentsUsers extends RLAssignment
 		$group_ids = $db->loadColumn();
 
 		return array_unique(array_merge($selection, $group_ids));
-	}
-
-	private function setUserGroupChildrenIds()
-	{
-		$children = $this->getUserGroupChildrenIds($this->selection);
-
-		if ($this->params->inc_children == 2)
-		{
-			$this->selection = $children;
-
-			return;
-		}
-
-		$this->selection = array_merge($this->selection, $children);
 	}
 
 	private function getUserGroupChildrenIds($groups)
@@ -164,5 +166,12 @@ class RLAssignmentsUsers extends RLAssignment
 		$children = array_unique($children);
 
 		return $children;
+	}
+
+	public function passUsers()
+	{
+		$user = JFactory::getApplication()->getIdentity() ?: JFactory::getUser();
+
+		return $this->passSimple($user->get('id'));
 	}
 }

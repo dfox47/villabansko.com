@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,16 +13,29 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/assignment.php';
+use Joomla\CMS\Factory as JFactory;
+
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 // If controller.php exists, assume this is K2 v3
-defined('RL_K2_VERSION') or define('RL_K2_VERSION', JFile::exists(JPATH_ADMINISTRATOR . '/components/com_k2/controller.php') ? 3 : 2);
+defined('RL_K2_VERSION') or define('RL_K2_VERSION', file_exists(JPATH_ADMINISTRATOR . '/components/com_k2/controller.php') ? 3 : 2);
 
 class RLAssignmentsK2 extends RLAssignment
 {
-	public function passPageTypes()
+	public function getItem($fields = [])
 	{
-		return $this->passByPageTypes('com_k2', $this->selection, $this->assignment, false, true);
+		$query = $this->db->getQuery(true)
+			->select($fields)
+			->from('#__k2_items')
+			->where('id = ' . (int) $this->request->id);
+		$this->db->setQuery($query);
+
+		return $this->db->loadObject();
 	}
 
 	public function passCategories()
@@ -81,9 +94,11 @@ class RLAssignmentsK2 extends RLAssignment
 		}
 	}
 
-	private function getCategoryID()
+	private function getCatParentIds($id = 0)
 	{
-		return $this->request->id ?: JFactory::getApplication()->getUserStateFromRequest('com_k2itemsfilter_category', 'catid', 0, 'int');
+		$parent_field = RL_K2_VERSION == 3 ? 'parent_id' : 'parent';
+
+		return $this->getParentIds($id, 'k2_categories', $parent_field);
 	}
 
 	private function getCategoryIDFromItem()
@@ -102,41 +117,9 @@ class RLAssignmentsK2 extends RLAssignment
 		return $this->db->loadResult();
 	}
 
-	public function passTags()
+	private function getCategoryID()
 	{
-		if ($this->request->option != 'com_k2')
-		{
-			return $this->pass(false);
-		}
-
-		$tag  = trim(JFactory::getApplication()->input->getString('tag', ''));
-		$pass = (
-			($this->params->inc_tags && $tag != '')
-			|| ($this->params->inc_items && $this->request->view == 'item')
-		);
-
-		if ( ! $pass)
-		{
-			return $this->pass(false);
-		}
-
-		if ($this->params->inc_tags && $tag != '')
-		{
-			$tags = [trim(JFactory::getApplication()->input->getString('tag', ''))];
-
-			return $this->passSimple($tags, true);
-		}
-
-		$query = $this->db->getQuery(true)
-			->select('t.name')
-			->from('#__k2_tags_xref AS x')
-			->join('LEFT', '#__k2_tags AS t ON t.id = x.tagID')
-			->where('x.itemID = ' . (int) $this->request->id)
-			->where('t.published = 1');
-		$this->db->setQuery($query);
-		$tags = $this->db->loadColumn();
-
-		return $this->passSimple($tags, true);
+		return $this->request->id ?: JFactory::getApplication()->getUserStateFromRequest('com_k2itemsfilter_category', 'catid', 0, 'int');
 	}
 
 	public function passItems()
@@ -175,21 +158,45 @@ class RLAssignmentsK2 extends RLAssignment
 		return $this->pass($pass);
 	}
 
-	public function getItem($fields = [])
+	public function passPageTypes()
 	{
-		$query = $this->db->getQuery(true)
-			->select($fields)
-			->from('#__k2_items')
-			->where('id = ' . (int) $this->request->id);
-		$this->db->setQuery($query);
-
-		return $this->db->loadObject();
+		return $this->passByPageTypes('com_k2', $this->selection, $this->assignment, false, true);
 	}
 
-	private function getCatParentIds($id = 0)
+	public function passTags()
 	{
-		$parent_field = RL_K2_VERSION == 3 ? 'parent_id' : 'parent';
+		if ($this->request->option != 'com_k2')
+		{
+			return $this->pass(false);
+		}
 
-		return $this->getParentIds($id, 'k2_categories', $parent_field);
+		$tag  = trim(JFactory::getApplication()->input->getString('tag', ''));
+		$pass = (
+			($this->params->inc_tags && $tag != '')
+			|| ($this->params->inc_items && $this->request->view == 'item')
+		);
+
+		if ( ! $pass)
+		{
+			return $this->pass(false);
+		}
+
+		if ($this->params->inc_tags && $tag != '')
+		{
+			$tags = [trim(JFactory::getApplication()->input->getString('tag', ''))];
+
+			return $this->passSimple($tags, true);
+		}
+
+		$query = $this->db->getQuery(true)
+			->select('t.name')
+			->from('#__k2_tags_xref AS x')
+			->join('LEFT', '#__k2_tags AS t ON t.id = x.tagID')
+			->where('x.itemID = ' . (int) $this->request->id)
+			->where('t.published = 1');
+		$this->db->setQuery($query);
+		$tags = $this->db->loadColumn();
+
+		return $this->passSimple($tags, true);
 	}
 }

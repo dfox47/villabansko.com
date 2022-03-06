@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,11 +13,12 @@ namespace RegularLabs\Library;
 
 defined('_JEXEC') or die;
 
-jimport('joomla.filesystem.file');
+use Joomla\CMS\Access\Access as JAccess;
+use Joomla\CMS\Factory as JFactory;
+use RegularLabs\Library\CacheNew as Cache;
+use RegularLabs\Library\ParametersNew as Parameters;
 
-use JAccess;
-use JFactory;
-use JFile;
+jimport('joomla.filesystem.file');
 
 /**
  * Class Protect
@@ -25,77 +26,119 @@ use JFile;
  */
 class Protect
 {
-	static $protect_start        = '<!-- ___RL_PROTECTED___';
-	static $protect_end          = '___RL_PROTECTED___ -->';
-	static $protect_tags_start   = '<!-- ___RL_PROTECTED_TAGS___';
-	static $protect_tags_end     = '___RL_PROTECTED_TAGS___ -->';
-	static $html_safe_start      = '___RL_PROTECTED___';
 	static $html_safe_end        = '___/RL_PROTECTED___';
-	static $html_safe_tags_start = '___RL_PROTECTED_TAGS___';
+	static $html_safe_start      = '___RL_PROTECTED___';
 	static $html_safe_tags_end   = '___/RL_PROTECTED_TAGS___';
-	static $sourcerer_tag        = null;
+	static $html_safe_tags_start = '___RL_PROTECTED_TAGS___';
+	static $protect_end          = '___RL_PROTECTED___ -->';
+	static $protect_start        = '<!-- ___RL_PROTECTED___';
+	static $protect_tags_end     = '___RL_PROTECTED_TAGS___ -->';
+	static $protect_tags_start   = '<!-- ___RL_PROTECTED_TAGS___';
 	static $sourcerer_characters = '{.}';
+	static $sourcerer_tag        = null;
 
 	/**
-	 * Check if page should be protected for given extension
+	 * Check if article passes security levels
+	 *
+	 * @param object $article
+	 * @param array  $securtiy_levels
+	 *
+	 * @return bool|int
+	 */
+	public static function articlePassesSecurity(&$article, $securtiy_levels = [])
+	{
+		if ( ! isset($article->created_by))
+		{
+			return true;
+		}
+
+		if (empty($securtiy_levels))
+		{
+			return true;
+		}
+
+		if (is_string($securtiy_levels))
+		{
+			$securtiy_levels = [$securtiy_levels];
+		}
+
+		if (
+			! is_array($securtiy_levels)
+			|| in_array('-1', $securtiy_levels)
+		)
+		{
+			return true;
+		}
+
+		// Lookup group level of creator
+		$user_groups = new JAccess;
+		$user_groups = $user_groups->getGroupsByUser($article->created_by);
+
+		// Return true if any of the security levels are found in the users groups
+		return count(array_intersect($user_groups, $securtiy_levels));
+	}
+
+	/**
+	 * Replace any protected text to original
+	 *
+	 * @param string $string
+	 */
+	public static function convertProtectionToHtmlSafe(&$string)
+	{
+		$string = str_replace(
+			[
+				self::$protect_start,
+				self::$protect_end,
+				self::$protect_tags_start,
+				self::$protect_tags_end,
+			],
+			[
+				self::$html_safe_start,
+				self::$html_safe_end,
+				self::$html_safe_tags_start,
+				self::$html_safe_tags_end,
+			],
+			$string
+		);
+	}
+
+	/**
+	 * Create a html comment from given comment string
+	 *
+	 * @param string $name
+	 * @param string $comment
+	 *
+	 * @return string
+	 */
+	public static function getMessageCommentTag($name, $comment)
+	{
+		[$start, $end] = self::getMessageCommentTags($name);
+
+		return $start . $comment . $end;
+	}
+
+	/**
+	 * Get the start and end parts for the html message comment tag
+	 *
+	 * @param string $name
+	 *
+	 * @return array
+	 */
+	public static function getMessageCommentTags($name = '')
+	{
+		return ['<!--  ' . $name . ' Message: ', ' -->'];
+	}
+
+	/**
+	 * Check if the component is installed
 	 *
 	 * @param string $extension_alias
 	 *
 	 * @return bool
 	 */
-	public static function isDisabledByUrl($extension_alias = '')
+	public static function isComponentInstalled($extension_alias)
 	{
-		// return if disabled via url
-		if (($extension_alias && JFactory::getApplication()->input->get('disable_' . $extension_alias)))
-		{
-			return true;
-		}
-	}
-
-	/**
-	 * Check if page should be protected for given extension
-	 *
-	 * @param bool  $hastags
-	 * @param array $restricted_formats
-	 *
-	 * @return bool
-	 */
-	public static function isRestrictedPage($hastags = false, $restricted_formats = [])
-	{
-		$cache_id = 'isRestrictedPage_' . $hastags . '_' . json_encode($restricted_formats);
-
-		if (Cache::has($cache_id))
-		{
-			return Cache::get($cache_id);
-		}
-
-		$input = JFactory::getApplication()->input;
-
-		// return if current page is in protected formats
-		// return if current page is an image
-		// return if current page is an installation page
-		// return if current page is Regular Labs QuickPage
-		// return if current page is a JoomFish or Josetta page
-		$is_restricted = (
-			in_array($input->get('format'), $restricted_formats)
-			|| in_array($input->get('view'), ['image', 'img'])
-			|| in_array($input->get('type'), ['image', 'img'])
-			|| in_array($input->get('task'), ['install.install', 'install.ajax_upload'])
-			|| ($hastags
-				&& (
-					$input->getInt('rl_qp', 0)
-					|| in_array($input->get('option'), ['com_joomfishplus', 'com_josetta'])
-				)
-			)
-			|| (Document::isClient('administrator')
-				&& in_array($input->get('option'), ['com_jdownloads'])
-			)
-		);
-
-		return Cache::set(
-			$cache_id,
-			$is_restricted
-		);
+		return file_exists(JPATH_ADMINISTRATOR . '/components/com_' . $extension_alias . '/' . $extension_alias . '.xml');
 	}
 
 	/**
@@ -109,6 +152,57 @@ class Protect
 		}
 
 		return self::isRestrictedPage($hastags, $exclude_formats);
+	}
+
+	/**
+	 * Check if page should be protected for given extension
+	 *
+	 * @param string $extension_alias
+	 *
+	 * @return bool
+	 */
+	public static function isDisabledByUrl($extension_alias = '')
+	{
+		// return if disabled via url
+		return $extension_alias
+			&& JFactory::getApplication()->input->get('disable_' . $extension_alias);
+	}
+
+	/**
+	 * Check if page should be protected for given extension
+	 *
+	 * @param bool  $hastags
+	 * @param array $restricted_formats
+	 *
+	 * @return bool
+	 */
+	public static function isRestrictedPage($hastags = false, $restricted_formats = [])
+	{
+		$cache = new Cache([__METHOD__, $hastags, $restricted_formats]);
+
+		if ($cache->exists())
+		{
+			return $cache->get();
+		}
+
+		$input = JFactory::getApplication()->input;
+
+		// return if current page is in protected formats
+		// return if current page is an image
+		// return if current page is an installation page
+		// return if current page is Regular Labs QuickPage
+		// return if current page is a JoomFish or Josetta page
+		$is_restricted = (
+			in_array($input->get('format'), $restricted_formats, true)
+//			|| in_array($input->get('view'), ['image', 'img'], true)
+			|| in_array($input->get('type'), ['image', 'img'], true)
+			|| in_array($input->get('task'), ['install.install', 'install.ajax_upload'], true)
+			|| ($hastags && $input->getInt('rl_qp', 0))
+			|| ($hastags && in_array($input->get('option'), ['com_joomfishplus', 'com_josetta'], true))
+			|| (Document::isClient('administrator') && in_array($input->get('option'), ['com_jdownloads'], true))
+		);
+
+		return $cache->set($is_restricted);
 	}
 
 	/**
@@ -126,18 +220,17 @@ class Protect
 			return false;
 		}
 
-		$restricted_components =
-			is_array($restricted_components)
-				? $restricted_components
-				: explode(',', str_replace('|', ',', $restricted_components));
+		$restricted_components = ArrayHelper::toArray(str_replace('|', ',', $restricted_components));
+		$restricted_components = ArrayHelper::clean($restricted_components);
 
-		if (in_array(JFactory::getApplication()->input->get('option'), $restricted_components))
+		if ( ! empty($restricted_components) && in_array(JFactory::getApplication()->input->get('option'), $restricted_components, true))
 		{
 			return true;
 		}
 
 		if (JFactory::getApplication()->input->get('option') == 'com_acymailing'
-			&& ! in_array(JFactory::getApplication()->input->get('ctrl'), ['user', 'archive'])
+			&& ! in_array(JFactory::getApplication()->input->get('ctrl'), ['user', 'archive'], true)
+			&& ! in_array(JFactory::getApplication()->input->get('view'), ['user', 'archive'], true)
 		)
 		{
 			return true;
@@ -153,37 +246,31 @@ class Protect
 	 *
 	 * @return bool
 	 */
-	public static function isComponentInstalled($extension_alias)
-	{
-		return JFile::exists(JPATH_ADMINISTRATOR . '/components/com_' . $extension_alias . '/' . $extension_alias . '.php');
-	}
-
-	/**
-	 * Check if the component is installed
-	 *
-	 * @param string $extension_alias
-	 *
-	 * @return bool
-	 */
 	public static function isSystemPluginInstalled($extension_alias)
 	{
-		return JFile::exists(JPATH_PLUGINS . '/system/' . $extension_alias . '/' . $extension_alias . '.php');
+		return file_exists(JPATH_PLUGINS . '/system/' . $extension_alias . '/' . $extension_alias . '.xml');
 	}
 
 	/**
-	 * Return the Regular Expressions string to match:
-	 * The edit form
+	 * Replace in protect array using Regular Expressions
 	 *
-	 * @param int $regex_format
-	 *
-	 * @return string
+	 * @param array  $array
+	 * @param string $search
+	 * @param string $replacement
 	 */
-	public static function getFormRegex()
+	public static function pregReplaceInArray(&$array, $search, $replacement)
 	{
-		return '(<form\s[^>]*('
-			. '(id|name)="(adminForm|postform|submissionForm|default_action_user|seblod_form|spEntryForm)"'
-			. '|action="[^"]*option=com_myjspace&(amp;)?view=see"'
-			. '))';
+		foreach ($array as $key => &$string)
+		{
+			// only do something if string is not empty
+			// or on uneven count = not yet protected
+			if (trim($string) == '' || fmod($key, 2))
+			{
+				continue;
+			}
+
+			$array[$key] = RegEx::replace($search, $replacement, $string);
+		}
 	}
 
 	/**
@@ -321,37 +408,6 @@ class Protect
 	}
 
 	/**
-	 * Protect the script tags
-	 *
-	 * @param string $string
-	 */
-	public static function protectScripts(&$string)
-	{
-		if (strpos($string, '</script>') === false)
-		{
-			return;
-		}
-
-		self::protectByRegex(
-			$string,
-			'<script[\s>].*?</script>'
-		);
-	}
-
-	/**
-	 * Protect all html tags with some type of attributes/content
-	 *
-	 * @param string $string
-	 */
-	public static function protectHtmlTags(&$string)
-	{
-		// protect comment tags
-		self::protectByRegex($string, '<!--\s[^>].*?(?:\s-->|$)');
-		// protect html tags
-		self::protectByRegex($string, '<[a-z][^>]*(?:="[^"]*"|=\'[^\']*\')+[^>]*>');
-	}
-
-	/**
 	 * Protect text by given regex
 	 *
 	 * @param string $string
@@ -378,119 +434,21 @@ class Protect
 	}
 
 	/**
-	 * Protect given plugin style tags
+	 * Encode string
 	 *
 	 * @param string $string
-	 * @param array  $tags
-	 * @param bool   $include_closing_tags
-	 */
-	public static function protectTags(&$string, $tags = [], $include_closing_tags = true)
-	{
-		list($tags, $protected) = self::prepareTags($tags, $include_closing_tags);
-
-		$string = str_replace($tags, $protected, $string);
-	}
-
-	/**
-	 * Replace any protected tags to original
+	 * @param int    $is_tag
 	 *
-	 * @param string $string
-	 * @param array  $tags
-	 * @param bool   $include_closing_tags
+	 * @return string
 	 */
-	public static function unprotectTags(&$string, $tags = [], $include_closing_tags = true)
+	public static function protectString($string, $is_tag = false)
 	{
-		list($tags, $protected) = self::prepareTags($tags, $include_closing_tags);
-
-		$string = str_replace($protected, $tags, $string);
-	}
-
-	/**
-	 * Protect array of strings
-	 *
-	 * @param string $string
-	 * @param array  $unprotected
-	 * @param array  $protected
-	 */
-	public static function protectInString(&$string, $unprotected = [], $protected = [])
-	{
-		$protected = empty($protected) ? self::protectArray($unprotected) : $protected;
-
-		$string = str_replace($unprotected, $protected, $string);
-	}
-
-	/**
-	 * Replace any protected tags to original
-	 *
-	 * @param string $string
-	 * @param array  $unprotected
-	 * @param array  $protected
-	 */
-	public static function unprotectInString(&$string, $unprotected = [], $protected = [])
-	{
-		$protected = empty($protected) ? self::protectArray($unprotected) : $protected;
-
-		$string = str_replace($protected, $unprotected, $string);
-	}
-
-	/**
-	 * Return the sourcerer tag name and characters
-	 *
-	 * @return array
-	 */
-	public static function getSourcererTag()
-	{
-		if ( ! is_null(self::$sourcerer_tag))
+		if ($is_tag)
 		{
-			return [self::$sourcerer_tag, self::$sourcerer_characters];
+			return self::$protect_tags_start . base64_encode($string) . self::$protect_tags_end;
 		}
 
-		$parameters = Parameters::getInstance()->getPluginParams('sourcerer');
-
-		self::$sourcerer_tag        = isset($parameters->syntax_word) ? $parameters->syntax_word : '';
-		self::$sourcerer_characters = isset($parameters->tag_characters) ? $parameters->tag_characters : '{.}';
-
-		return [self::$sourcerer_tag, self::$sourcerer_characters];
-	}
-
-	/**
-	 * Protect all Sourcerer blocks
-	 *
-	 * @param string $string
-	 */
-	public static function protectSourcerer(&$string)
-	{
-		list($tag, $characters) = self::getSourcererTag();
-
-		if (empty($tag))
-		{
-			return;
-		}
-
-		list($start, $end) = explode('.', $characters);
-
-		if (strpos($string, $start . '/' . $tag . $end) === false)
-		{
-			return;
-		}
-
-		$regex = RegEx::quote($start . $tag)
-			. '[\s\}].*?'
-			. RegEx::quote($start . '/' . $tag . $end);
-
-		RegEx::matchAll($regex, $string, $matches, null, PREG_PATTERN_ORDER);
-
-		if (empty($matches))
-		{
-			return;
-		}
-
-		$matches = array_unique($matches[0]);
-
-		foreach ($matches as $match)
-		{
-			$string = str_replace($match, self::protectString($match), $string);
-		}
+		return self::$protect_start . base64_encode($string) . self::$protect_end;
 	}
 
 	/**
@@ -500,16 +458,16 @@ class Protect
 	 * @param array  $tags
 	 * @param bool   $include_closing_tags
 	 */
-	public static function protectForm(&$string, $tags = [], $include_closing_tags = true)
+	public static function protectForm(&$string, $tags = [], $include_closing_tags = true, $form_classes = [])
 	{
 		if ( ! Document::isEditPage())
 		{
 			return;
 		}
 
-		list($tags, $protected_tags) = self::prepareTags($tags, $include_closing_tags);
+		[$tags, $protected_tags] = self::prepareTags($tags, $include_closing_tags);
 
-		$string = RegEx::replace(self::getFormRegex(), '<!-- TMP_START_EDITOR -->\1', $string);
+		$string = RegEx::replace(self::getFormRegex($form_classes), '<!-- TMP_START_EDITOR -->\1', $string);
 		$string = explode('<!-- TMP_START_EDITOR -->', $string);
 
 		foreach ($string as $i => &$string_part)
@@ -523,6 +481,65 @@ class Protect
 		}
 
 		$string = implode('', $string);
+	}
+
+	/**
+	 * Prepare the tags and protected tags array
+	 *
+	 * @param array $tags
+	 * @param bool  $include_closing_tags
+	 *
+	 * @return bool|mixed
+	 */
+	private static function prepareTags($tags, $include_closing_tags = true)
+	{
+		if ( ! is_array($tags))
+		{
+			$tags = [$tags];
+		}
+
+		$cache = new Cache([__METHOD__, $tags, $include_closing_tags]);
+
+		if ($cache->exists())
+		{
+			return $cache->get();
+		}
+
+		foreach ($tags as $i => $tag)
+		{
+			if (StringHelper::is_alphanumeric($tag[0]))
+			{
+				$tag = '{' . $tag;
+			}
+
+			$tags[$i] = $tag;
+
+			if ($include_closing_tags)
+			{
+				$tags[] = RegEx::replace('^([^a-z0-9]+)', '\1/', $tag);
+			}
+		}
+
+		return $cache->set([$tags, self::protectArray($tags, 1)]);
+	}
+
+	/**
+	 * Return the Regular Expressions string to match:
+	 * The edit form
+	 *
+	 * @param array $form_classes
+	 *
+	 * @return string
+	 */
+	public static function getFormRegex($form_classes = [])
+	{
+		$form_classes = ArrayHelper::toArray($form_classes);
+
+		return '(<form\s[^>]*('
+			. '(id|name)="(adminForm|postform|submissionForm|default_action_user|seblod_form|spEntryForm)"'
+			. '|action="[^"]*option=com_myjspace&(amp;)?view=see"'
+			. (! empty($form_classes) ? '|class="([^"]* )?(' . implode('|', $form_classes) . ')( [^"]*)?"' : '')
+			. '))';
 	}
 
 	/**
@@ -583,208 +600,6 @@ class Protect
 	}
 
 	/**
-	 * Replace any protected text to original
-	 *
-	 * @param string|array $string
-	 */
-	public static function unprotect(&$string)
-	{
-		if (is_array($string))
-		{
-			foreach ($string as &$part)
-			{
-				self::unprotect($part);
-			}
-
-			return;
-		}
-
-		self::unprotectByDelimiters(
-			$string,
-			[self::$protect_tags_start, self::$protect_tags_end]
-		);
-
-		self::unprotectByDelimiters(
-			$string,
-			[self::$protect_start, self::$protect_end]
-		);
-
-		if (StringHelper::contains($string, [self::$protect_tags_start, self::$protect_tags_end, self::$protect_start, self::$protect_end]))
-		{
-			self::unprotect($string);
-		}
-	}
-
-	/**
-	 * @param string $string
-	 * @param array  $delimiters
-	 */
-	private static function unprotectByDelimiters(&$string, $delimiters)
-	{
-		if ( ! StringHelper::contains($string, $delimiters))
-		{
-			return;
-		}
-
-		$regex = RegEx::preparePattern(RegEx::quote($delimiters), 's', $string);
-
-		$parts = preg_split($regex, $string);
-
-		foreach ($parts as $i => &$part)
-		{
-			if ($i % 2 == 0)
-			{
-				continue;
-			}
-
-			$part = base64_decode($part);
-		}
-
-		$string = implode('', $parts);
-	}
-
-	/**
-	 * Replace any protected text to original
-	 *
-	 * @param string $string
-	 */
-	public static function convertProtectionToHtmlSafe(&$string)
-	{
-		$string = str_replace(
-			[
-				self::$protect_start,
-				self::$protect_end,
-				self::$protect_tags_start,
-				self::$protect_tags_end,
-			],
-			[
-				self::$html_safe_start,
-				self::$html_safe_end,
-				self::$html_safe_tags_start,
-				self::$html_safe_tags_end,
-			],
-			$string
-		);
-	}
-
-	/**
-	 * Replace any protected text to original
-	 *
-	 * @param string $string
-	 */
-	public static function unprotectHtmlSafe(&$string)
-	{
-		$string = str_replace(
-			[
-				self::$html_safe_start,
-				self::$html_safe_end,
-				self::$html_safe_tags_start,
-				self::$html_safe_tags_end,
-			],
-			[
-				self::$protect_start,
-				self::$protect_end,
-				self::$protect_tags_start,
-				self::$protect_tags_end,
-			],
-			$string
-		);
-
-		self::unprotect($string);
-	}
-
-	/**
-	 * Prepare the tags and protected tags array
-	 *
-	 * @param array $tags
-	 * @param bool  $include_closing_tags
-	 *
-	 * @return bool|mixed
-	 */
-	private static function prepareTags($tags, $include_closing_tags = true)
-	{
-		if ( ! is_array($tags))
-		{
-			$tags = [$tags];
-		}
-
-		$cache_id = 'prepareTags_' . json_encode($tags) . '_' . $include_closing_tags;
-
-		if (Cache::has($cache_id))
-		{
-			return Cache::get($cache_id);
-		}
-
-		foreach ($tags as $i => $tag)
-		{
-			if (StringHelper::is_alphanumeric($tag[0]))
-			{
-				$tag = '{' . $tag;
-			}
-
-			$tags[$i] = $tag;
-
-			if ($include_closing_tags)
-			{
-				$tags[] = RegEx::replace('^([^a-z0-9]+)', '\1/', $tag);
-			}
-		}
-
-		return Cache::set(
-			$cache_id,
-			[$tags, self::protectArray($tags, 1)]
-		);
-	}
-
-	/**
-	 * Encode string
-	 *
-	 * @param string $string
-	 * @param int    $is_tag
-	 *
-	 * @return string
-	 */
-	public static function protectString($string, $is_tag = false)
-	{
-		if ($is_tag)
-		{
-			return self::$protect_tags_start . base64_encode($string) . self::$protect_tags_end;
-		}
-
-		return self::$protect_start . base64_encode($string) . self::$protect_end;
-	}
-
-	/**
-	 * Decode string
-	 *
-	 * @param string $string
-	 * @param int    $is_tag
-	 *
-	 * @return string
-	 */
-	public static function unprotectString($string, $is_tag = false)
-	{
-		if ($is_tag)
-		{
-			return self::$protect_tags_start . base64_decode($string) . self::$protect_tags_end;
-		}
-
-		return self::$protect_start . base64_decode($string) . self::$protect_end;
-	}
-
-	/**
-	 * Encode tag string
-	 *
-	 * @param string $string
-	 *
-	 * @return string
-	 */
-	public static function protectTag($string)
-	{
-		return self::protectString($string, 1);
-	}
-
-	/**
 	 * Encode array of strings
 	 *
 	 * @param array $array
@@ -803,55 +618,204 @@ class Protect
 	}
 
 	/**
-	 * Decode array of strings
+	 * Protect all html tags with some type of attributes/content
 	 *
-	 * @param array $array
-	 * @param int   $is_tag
-	 *
-	 * @return mixed
+	 * @param string $string
 	 */
-	public static function unprotectArray($array, $is_tag = false)
+	public static function protectHtmlTags(&$string)
 	{
-		foreach ($array as &$string)
-		{
-			$string = self::unprotectString($string, $is_tag);
-		}
+		// protect comment tags
+		self::protectHtmlCommentTags($string);
 
-		return $array;
+		// protect html tags
+		self::protectByRegex($string, '<[a-z][^>]*(?:="[^"]*"|=\'[^\']*\')+[^>]*>');
 	}
 
 	/**
-	 * Replace any protected tags to original
+	 * Protect all html comment tags
 	 *
 	 * @param string $string
-	 * @param array  $tags
+	 * @param array  $ignores
 	 */
-	public static function unprotectForm(&$string, $tags = [])
+	public static function protectHtmlCommentTags(&$string, $ignores = [])
 	{
-		// Protect entire form
-		if (empty($tags))
-		{
-			self::unprotect($string);
+		$regex = '<\!--.*?-->';
 
+		if ( ! empty($ignores) && StringHelper::contains($string, $ignores))
+		{
+			$regex = '<\!--((?!' . RegEx::quote($ignores) . ').)*-->';
+		}
+
+		self::protectByRegex($string, $regex);
+	}
+
+	/**
+	 * Protect array of strings
+	 *
+	 * @param string $string
+	 * @param array  $unprotected
+	 * @param array  $protected
+	 */
+	public static function protectInString(&$string, $unprotected = [], $protected = [])
+	{
+		$protected = ! empty($protected) ? $protected : self::protectArray($unprotected);
+
+		$string = str_replace($unprotected, $protected, $string);
+	}
+
+	/**
+	 * Protect the script tags
+	 *
+	 * @param string $string
+	 */
+	public static function protectScripts(&$string)
+	{
+		if (strpos($string, '</script>') === false)
+		{
 			return;
 		}
 
-		self::unprotectTags($string, $tags);
+		self::protectByRegex(
+			$string,
+			'<script[\s>].*?</script>'
+		);
 	}
 
 	/**
-	 * Wrap string in comment tags
+	 * Protect all Sourcerer blocks
 	 *
-	 * @param string $name
-	 * @param string $comment
+	 * @param string $string
+	 */
+	public static function protectSourcerer(&$string)
+	{
+		[$tag, $characters] = self::getSourcererTag();
+
+		if (empty($tag))
+		{
+			return;
+		}
+
+		[$start, $end] = explode('.', $characters);
+
+		if (strpos($string, $start . '/' . $tag . $end) === false)
+		{
+			return;
+		}
+
+		$regex = RegEx::quote($start . $tag)
+			. '[\s\}].*?'
+			. RegEx::quote($start . '/' . $tag . $end);
+
+		RegEx::matchAll($regex, $string, $matches, null, PREG_PATTERN_ORDER);
+
+		if (empty($matches))
+		{
+			return;
+		}
+
+		$matches = array_unique($matches[0]);
+
+		foreach ($matches as $match)
+		{
+			$string = str_replace($match, self::protectString($match), $string);
+		}
+	}
+
+	/**
+	 * Return the sourcerer tag name and characters
+	 *
+	 * @return array
+	 */
+	public static function getSourcererTag()
+	{
+		if ( ! is_null(self::$sourcerer_tag))
+		{
+			return [self::$sourcerer_tag, self::$sourcerer_characters];
+		}
+
+		$parameters = Parameters::getPlugin('sourcerer');
+
+		self::$sourcerer_tag        = $parameters->syntax_word ?? '';
+		self::$sourcerer_characters = $parameters->tag_characters ?? '{.}';
+
+		return [self::$sourcerer_tag, self::$sourcerer_characters];
+	}
+
+	/**
+	 * Encode tag string
+	 *
+	 * @param string $string
 	 *
 	 * @return string
 	 */
-	public static function wrapInCommentTags($name, $string)
+	public static function protectTag($string)
 	{
-		list($start, $end) = self::getCommentTags($name);
+		return self::protectString($string, 1);
+	}
 
-		return $start . $string . $end;
+	/**
+	 * Protect given plugin style tags
+	 *
+	 * @param string $string
+	 * @param array  $tags
+	 * @param bool   $include_closing_tags
+	 */
+	public static function protectTags(&$string, $tags = [], $include_closing_tags = true)
+	{
+		[$tags, $protected] = self::prepareTags($tags, $include_closing_tags);
+
+		$string = str_replace($tags, $protected, $string);
+	}
+
+	/**
+	 * Remove area comments in html
+	 *
+	 * @param string $string
+	 * @param string $prefix
+	 */
+	public static function removeAreaTags(&$string, $prefix = '')
+	{
+		$string = RegEx::replace('<!-- (START|END): ' . $prefix . '_[A-Z]+ -->', '', $string, 's');
+	}
+
+	/**
+	 * Remove comments in html
+	 *
+	 * @param string $string
+	 * @param string $name
+	 */
+	public static function removeCommentTags(&$string, $name = '')
+	{
+		[$start, $end] = self::getCommentTags($name);
+
+		$string = str_replace(
+			[
+				$start, $end,
+				htmlentities($start), htmlentities($end),
+				urlencode($start), urlencode($end),
+			], '', $string
+		);
+
+		$start = str_replace(' -->', 'REGEX_PLACEHOLDER -->', $start);
+		$end   = str_replace(' -->', 'REGEX_PLACEHOLDER -->', $end);
+
+		$regex = '(' . RegEx::quote($start) . '|' . RegEx::quote($end) . ')';
+
+		$regex = str_replace('REGEX_PLACEHOLDER', '(:? [a-z0-9]*)?', $regex);
+
+		$string = RegEx::replace(
+			$regex,
+			'',
+			$string
+		);
+
+		[$start, $end] = self::getMessageCommentTags($name);
+
+		$string = RegEx::replace(
+			RegEx::quote($start) . '.*?' . RegEx::quote($end),
+			'',
+			$string
+		);
 	}
 
 	/**
@@ -891,227 +855,6 @@ class Protect
 	}
 
 	/**
-	 * Create a html comment from given comment string
-	 *
-	 * @param string $name
-	 * @param string $comment
-	 *
-	 * @return string
-	 */
-	public static function getMessageCommentTag($name, $comment)
-	{
-		list($start, $end) = self::getMessageCommentTags($name);
-
-		return $start . $comment . $end;
-	}
-
-	/**
-	 * Get the start and end parts for the html message comment tag
-	 *
-	 * @param string $name
-	 *
-	 * @return array
-	 */
-	public static function getMessageCommentTags($name = '')
-	{
-		return ['<!--  ' . $name . ' Message: ', ' -->'];
-	}
-
-	/**
-	 * Get the start and end parts for the inline comment tags for scripts/styles
-	 *
-	 * @param string $name
-	 * @param string $type
-	 *
-	 * @return array
-	 */
-	public static function getInlineCommentTags($name = '', $type = '', $regex = false)
-	{
-		if ($regex)
-		{
-			$type = 'TYPE_PLACEHOLDER';
-		}
-
-		$start = '/* START: ' . $name . ' ' . $type . ' */';
-		$end   = '/* END: ' . $name . ' ' . $type . ' */';
-
-		if ($regex)
-		{
-			$start = str_replace($type, '[a-z]*', RegEx::quote($start));
-			$end   = str_replace($type, '[a-z]*', RegEx::quote($end));
-		}
-
-		return [$start, $end];
-	}
-
-	/**
-	 * Wraps a style or javascript declaration with comment tags
-	 *
-	 * @param string $content
-	 * @param string $name
-	 * @param string $type
-	 * @param bool   $minify
-	 */
-	public static function wrapDeclaration($content = '', $name = '', $type = 'styles', $minify = true)
-	{
-		if (empty($name))
-		{
-			return $content;
-		}
-
-		list($start, $end) = self::getInlineCommentTags($name, $type);
-
-		$spacer = $minify ? ' ' : "\n";
-
-		return $start . $spacer . $content . $spacer . $end;
-	}
-
-	/**
-	 * Wraps a javascript declaration with comment tags
-	 *
-	 * @param string $content
-	 * @param string $name
-	 * @param bool   $minify
-	 */
-	public static function wrapScriptDeclaration($content = '', $name = '', $minify = true)
-	{
-		return self::wrapDeclaration($content, $name, 'scripts', $minify);
-	}
-
-	/**
-	 * Wraps a stylesheet declaration with comment tags
-	 *
-	 * @param string $content
-	 * @param string $name
-	 * @param bool   $minify
-	 */
-	public static function wrapStyleDeclaration($content = '', $name = '', $minify = true)
-	{
-		return self::wrapDeclaration($content, $name, 'styles', $minify);
-	}
-
-	/**
-	 * Remove area comments in html
-	 *
-	 * @param string $string
-	 * @param string $prefix
-	 */
-	public static function removeAreaTags(&$string, $prefix = '')
-	{
-		$string = RegEx::replace('<!-- (START|END): ' . $prefix . '_[A-Z]+ -->', '', $string, 's');
-	}
-
-	/**
-	 * Remove comments in html
-	 *
-	 * @param string $string
-	 * @param string $name
-	 */
-	public static function removeCommentTags(&$string, $name = '')
-	{
-		list($start, $end) = self::getCommentTags($name);
-
-		$string = str_replace(
-			[
-				$start, $end,
-				htmlentities($start), htmlentities($end),
-				urlencode($start), urlencode($end),
-			], '', $string
-		);
-
-		list($start, $end) = self::getMessageCommentTags($name);
-
-		$string = RegEx::replace(
-			RegEx::quote($start) . '.*?' . RegEx::quote($end),
-			'',
-			$string
-		);
-	}
-
-	/**
-	 * Remove inline comments in scrips and styles
-	 *
-	 * @param string $string
-	 * @param string $name
-	 */
-	public static function removeInlineComments(&$string, $name)
-	{
-		list($start, $end) = Protect::getInlineCommentTags($name, null, true);
-		$string = RegEx::replace('(' . $start . '|' . $end . ')', "\n", $string);
-	}
-
-	/**
-	 * Remove left over plugin tags
-	 *
-	 * @param string $string
-	 * @param array  $tags
-	 * @param string $character_start
-	 * @param string $character_end
-	 * @param bool   $keep_content
-	 */
-	public static function removePluginTags(&$string, $tags, $character_start = '{', $character_end = '{', $keep_content = true)
-	{
-		$character_start = RegEx::quote($character_start);
-		$character_end   = RegEx::quote($character_end);
-
-		foreach ($tags as $tag)
-		{
-			if ( ! is_array($tag))
-			{
-				$tag = [$tag, $tag];
-			}
-
-			if (count($tag) < 2)
-			{
-				$tag = [$tag[0], $tag[0]];
-			}
-
-			$regex = $character_start . RegEx::quote($tag[0]) . '(?:\s.*?)?' . $character_end
-				. '(.*?)'
-				. $character_start . '/' . RegEx::quote($tag[1]) . $character_end;
-
-			$replace = $keep_content ? '\1' : '';
-
-			$string = RegEx::replace($regex, $replace, $string);
-		}
-	}
-
-	/**
-	 * Remove tags from title tags
-	 *
-	 * @param string $string
-	 * @param array  $tags
-	 * @param bool   $include_closing_tags
-	 * @param array  $html_tags
-	 */
-	public static function removeFromHtmlTagContent(&$string, $tags, $include_closing_tags = true, $html_tags = ['title'])
-	{
-		list($tags, $protected) = self::prepareTags($tags, $include_closing_tags);
-
-		if ( ! is_array($html_tags))
-		{
-			$html_tags = [$html_tags];
-		}
-
-		RegEx::matchAll('(<(' . implode('|', $html_tags) . ')(?:\s[^>]*?)>)(.*?)(</\2>)', $string, $matches);
-
-		if (empty($matches))
-		{
-			return;
-		}
-
-		foreach ($matches as $match)
-		{
-			$content = $match[3];
-			foreach ($tags as $tag)
-			{
-				$content = RegEx::replace(RegEx::quote($tag) . '.*?\}', '', $content);
-			}
-			$string = str_replace($match[0], $match[1] . $content . $match[4], $string);
-		}
-	}
-
-	/**
 	 * Remove tags from tag attributes
 	 *
 	 * @param string $string
@@ -1121,7 +864,7 @@ class Protect
 	 */
 	public static function removeFromHtmlTagAttributes(&$string, $tags, $attributes = 'ALL', $include_closing_tags = true)
 	{
-		list($tags, $protected) = self::prepareTags($tags, $include_closing_tags);
+		[$tags, $protected] = self::prepareTags($tags, $include_closing_tags);
 
 		if ($attributes == 'ALL')
 		{
@@ -1167,44 +910,136 @@ class Protect
 	}
 
 	/**
-	 * Check if article passes security levels
+	 * Remove tags from title tags
 	 *
-	 * @param object $article
-	 * @param array  $securtiy_levels
-	 *
-	 * @return bool|int
+	 * @param string $string
+	 * @param array  $tags
+	 * @param bool   $include_closing_tags
+	 * @param array  $html_tags
 	 */
-	public static function articlePassesSecurity(&$article, $securtiy_levels = [])
+	public static function removeFromHtmlTagContent(&$string, $tags, $include_closing_tags = true, $html_tags = ['title'])
 	{
-		if ( ! isset($article->created_by))
+		[$tags, $protected] = self::prepareTags($tags, $include_closing_tags);
+
+		if ( ! is_array($html_tags))
 		{
-			return true;
+			$html_tags = [$html_tags];
 		}
 
-		if (empty($securtiy_levels))
+		RegEx::matchAll('(<(' . implode('|', $html_tags) . ')(?:\s[^>]*?)>)(.*?)(</\2>)', $string, $matches);
+
+		if (empty($matches))
 		{
-			return true;
+			return;
 		}
 
-		if (is_string($securtiy_levels))
+		foreach ($matches as $match)
 		{
-			$securtiy_levels = [$securtiy_levels];
+			$content = $match[3];
+			foreach ($tags as $tag)
+			{
+				$content = RegEx::replace(RegEx::quote($tag) . '.*?\}', '', $content);
+			}
+			$string = str_replace($match[0], $match[1] . $content . $match[4], $string);
+		}
+	}
+
+	/**
+	 * Remove inline comments in scrips and styles
+	 *
+	 * @param string $string
+	 * @param string $name
+	 */
+	public static function removeInlineComments(&$string, $name)
+	{
+		[$start, $end] = Protect::getInlineCommentTags($name, null, true);
+		$string = RegEx::replace('(' . $start . '|' . $end . ')', "\n", $string);
+	}
+
+	/**
+	 * Get the start and end parts for the inline comment tags for scripts/styles
+	 *
+	 * @param string $name
+	 * @param string $type
+	 *
+	 * @return array
+	 */
+	public static function getInlineCommentTags($name = '', $type = '', $regex = false)
+	{
+		if ($regex)
+		{
+			return self::getInlineCommentTagsRegEx($name, $type);
 		}
 
-		if (
-			! is_array($securtiy_levels)
-			|| in_array('-1', $securtiy_levels)
-		)
+		if ($type)
 		{
-			return true;
+			$type = ': ' . $type;
 		}
 
-		// Lookup group level of creator
-		$user_groups = new JAccess;
-		$user_groups = $user_groups->getGroupsByUser($article->created_by);
+		$start = '/* START: ' . $name . $type . ' */';
+		$end   = '/* END: ' . $name . $type . ' */';
 
-		// Return true if any of the security levels are found in the users groups
-		return count(array_intersect($user_groups, $securtiy_levels));
+		return [$start, $end];
+	}
+
+	/**
+	 * Get the start and end parts for the inline comment tags for scripts/styles
+	 *
+	 * @param string $name
+	 * @param string $type
+	 *
+	 * @return array
+	 */
+	public static function getInlineCommentTagsRegEx($name = '', $type = '')
+	{
+		$name = str_replace(' ', ' ?', RegEx::quote($name));
+		$type = $type ? ':? ' . RegEx::quote($type) : '(:? [a-z0-9]*)?';
+
+		$start = '/\* START: ' . $name . $type . ' \*/';
+		$end   = '/\* END: ' . $name . $type . ' \*/';
+
+		return [$start, $end];
+	}
+
+	/**
+	 * Remove left over plugin tags
+	 *
+	 * @param string $string
+	 * @param array  $tags
+	 * @param string $character_start
+	 * @param string $character_end
+	 * @param bool   $keep_content
+	 */
+	public static function removePluginTags(&$string, $tags, $character_start = '{', $character_end = '}', $keep_content = true)
+	{
+		$regex_character_start = RegEx::quote($character_start);
+		$regex_character_end   = RegEx::quote($character_end);
+
+		foreach ($tags as $tag)
+		{
+			if ( ! is_array($tag))
+			{
+				$tag = [$tag, $tag];
+			}
+
+			if (count($tag) < 2)
+			{
+				$tag = [$tag[0], $tag[0]];
+			}
+
+			if ( ! StringHelper::contains($string, $character_start . '/' . $tag[1] . $character_end))
+			{
+				continue;
+			}
+
+			$regex = $regex_character_start . RegEx::quote($tag[0]) . '(?:\s.*?)?' . $regex_character_end
+				. '(.*?)'
+				. $regex_character_start . '/' . RegEx::quote($tag[1]) . $regex_character_end;
+
+			$replace = $keep_content ? '\1' : '';
+
+			$string = RegEx::replace($regex, $replace, $string);
+		}
 	}
 
 	/**
@@ -1230,24 +1065,233 @@ class Protect
 	}
 
 	/**
-	 * Replace in protect array using Regular Expressions
+	 * Decode array of strings
 	 *
-	 * @param array  $array
-	 * @param string $search
-	 * @param string $replacement
+	 * @param array $array
+	 * @param int   $is_tag
+	 *
+	 * @return mixed
 	 */
-	public static function pregReplaceInArray(&$array, $search, $replacement)
+	public static function unprotectArray($array, $is_tag = false)
 	{
-		foreach ($array as $key => &$string)
+		foreach ($array as &$string)
 		{
-			// only do something if string is not empty
-			// or on uneven count = not yet protected
-			if (trim($string) == '' || fmod($key, 2))
+			$string = self::unprotectString($string, $is_tag);
+		}
+
+		return $array;
+	}
+
+	/**
+	 * Decode string
+	 *
+	 * @param string $string
+	 * @param int    $is_tag
+	 *
+	 * @return string
+	 */
+	public static function unprotectString($string, $is_tag = false)
+	{
+		if ($is_tag)
+		{
+			return self::$protect_tags_start . base64_decode($string) . self::$protect_tags_end;
+		}
+
+		return self::$protect_start . base64_decode($string) . self::$protect_end;
+	}
+
+	/**
+	 * Replace any protected tags to original
+	 *
+	 * @param string $string
+	 * @param array  $tags
+	 */
+	public static function unprotectForm(&$string, $tags = [])
+	{
+		// Protect entire form
+		if (empty($tags))
+		{
+			self::unprotect($string);
+
+			return;
+		}
+
+		self::unprotectTags($string, $tags);
+	}
+
+	/**
+	 * Replace any protected text to original
+	 *
+	 * @param string|array $string
+	 */
+	public static function unprotect(&$string)
+	{
+		if (is_array($string))
+		{
+			foreach ($string as &$part)
+			{
+				self::unprotect($part);
+			}
+
+			return;
+		}
+
+		self::unprotectByDelimiters(
+			$string,
+			[self::$protect_tags_start, self::$protect_tags_end]
+		);
+
+		self::unprotectByDelimiters(
+			$string,
+			[self::$protect_start, self::$protect_end]
+		);
+
+		if (StringHelper::contains($string, [self::$protect_tags_start, self::$protect_tags_end, self::$protect_start, self::$protect_end]))
+		{
+			self::unprotect($string);
+		}
+	}
+
+	/**
+	 * Replace any protected tags to original
+	 *
+	 * @param string $string
+	 * @param array  $tags
+	 * @param bool   $include_closing_tags
+	 */
+	public static function unprotectTags(&$string, $tags = [], $include_closing_tags = true)
+	{
+		[$tags, $protected] = self::prepareTags($tags, $include_closing_tags);
+
+		$string = str_replace($protected, $tags, $string);
+	}
+
+	/**
+	 * @param string $string
+	 * @param array  $delimiters
+	 */
+	private static function unprotectByDelimiters(&$string, $delimiters)
+	{
+		if ( ! StringHelper::contains($string, $delimiters))
+		{
+			return;
+		}
+
+		$regex = RegEx::preparePattern(RegEx::quote($delimiters), 's', $string);
+
+		$parts = preg_split($regex, $string);
+
+		foreach ($parts as $i => &$part)
+		{
+			if ($i % 2 == 0)
 			{
 				continue;
 			}
 
-			$array[$key] = RegEx::replace($search, $replacement, $string);
+			$part = base64_decode($part);
 		}
+
+		$string = implode('', $parts);
+	}
+
+	/**
+	 * Replace any protected text to original
+	 *
+	 * @param string $string
+	 */
+	public static function unprotectHtmlSafe(&$string)
+	{
+		$string = str_replace(
+			[
+				self::$html_safe_start,
+				self::$html_safe_end,
+				self::$html_safe_tags_start,
+				self::$html_safe_tags_end,
+			],
+			[
+				self::$protect_start,
+				self::$protect_end,
+				self::$protect_tags_start,
+				self::$protect_tags_end,
+			],
+			$string
+		);
+
+		self::unprotect($string);
+	}
+
+	/**
+	 * Replace any protected tags to original
+	 *
+	 * @param string $string
+	 * @param array  $unprotected
+	 * @param array  $protected
+	 */
+	public static function unprotectInString(&$string, $unprotected = [], $protected = [])
+	{
+		$protected = ! empty($protected) ? $protected : self::protectArray($unprotected);
+
+		$string = str_replace($protected, $unprotected, $string);
+	}
+
+	/**
+	 * Wrap string in comment tags
+	 *
+	 * @param string $name
+	 * @param string $comment
+	 *
+	 * @return string
+	 */
+	public static function wrapInCommentTags($name, $string)
+	{
+		[$start, $end] = self::getCommentTags($name);
+
+		return $start . $string . $end;
+	}
+
+	/**
+	 * Wraps a javascript declaration with comment tags
+	 *
+	 * @param string $content
+	 * @param string $name
+	 * @param bool   $minify
+	 */
+	public static function wrapScriptDeclaration($content = '', $name = '', $minify = true)
+	{
+		return self::wrapDeclaration($content, $name, 'scripts', $minify);
+	}
+
+	/**
+	 * Wraps a style or javascript declaration with comment tags
+	 *
+	 * @param string $content
+	 * @param string $name
+	 * @param string $type
+	 * @param bool   $minify
+	 */
+	public static function wrapDeclaration($content = '', $name = '', $type = 'styles', $minify = true)
+	{
+		if (empty($name))
+		{
+			return $content;
+		}
+
+		[$start, $end] = self::getInlineCommentTags($name, $type);
+
+		$spacer = $minify ? ' ' : "\n";
+
+		return $start . $spacer . $content . $spacer . $end;
+	}
+
+	/**
+	 * Wraps a stylesheet declaration with comment tags
+	 *
+	 * @param string $content
+	 * @param string $name
+	 * @param bool   $minify
+	 */
+	public static function wrapStyleDeclaration($content = '', $name = '', $minify = true)
+	{
+		return self::wrapDeclaration($content, $name, 'styles', $minify);
 	}
 }

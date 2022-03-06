@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,14 +13,14 @@ namespace RegularLabs\Library\Condition;
 
 defined('_JEXEC') or die;
 
-use JFactory;
+use Joomla\CMS\Factory as JFactory;
+use RegularLabs\Library\Condition;
 
 /**
  * Class Template
  * @package RegularLabs\Library\Condition
  */
-class Template
-	extends \RegularLabs\Library\Condition
+class Template extends Condition
 {
 	public function pass()
 	{
@@ -47,11 +47,12 @@ class Template
 		// Find template style id based on params, as the template style id is not always stored in the getTemplate
 		$query = $this->db->getQuery(true)
 			->select('id')
-			->from('#__template_styles as s')
+			->from('#__template_styles AS s')
 			->where('s.client_id = 0')
 			->where('s.template = ' . $this->db->quote($template->template))
-			->where('s.params = ' . $this->db->quote($params));
-		$this->db->setQuery($query, 0, 1);
+			->where('s.params = ' . $this->db->quote($params))
+			->setLimit(1);
+		$this->db->setQuery($query);
 		$template->id = $this->db->loadResult('id');
 
 		if ($template->id)
@@ -62,8 +63,9 @@ class Template
 		// No template style id is found, so just grab the first result based on the template name
 		$query->clear('where')
 			->where('s.client_id = 0')
-			->where('s.template = ' . $this->db->quote($template->template));
-		$this->db->setQuery($query, 0, 1);
+			->where('s.template = ' . $this->db->quote($template->template))
+			->setLimit(1);
+		$this->db->setQuery($query);
 		$template->id = $this->db->loadResult('id');
 
 		return $template;

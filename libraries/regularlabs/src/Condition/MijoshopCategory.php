@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -17,8 +17,7 @@ defined('_JEXEC') or die;
  * Class MijoshopCategory
  * @package RegularLabs\Library\Condition
  */
-class MijoshopCategory
-	extends Mijoshop
+class MijoshopCategory extends Mijoshop
 {
 	public function pass()
 	{
@@ -39,30 +38,16 @@ class MijoshopCategory
 			return $this->_(false);
 		}
 
-		$cats = [];
-		if ($this->request->category_id)
-		{
-			$cats = $this->request->category_id;
-		}
-		else if ($this->request->item_id)
-		{
-			$query = $this->db->getQuery(true)
-				->select('c.category_id')
-				->from('#__mijoshop_product_to_category AS c')
-				->where('c.product_id = ' . (int) $this->request->id);
-			$this->db->setQuery($query);
-			$cats = $this->db->loadColumn();
-		}
+		$cats = $this->getCats();
 
-		$cats = $this->makeArray($cats);
-
-		$pass = $this->passSimple($cats, 'include');
+		$pass = $this->passSimple($cats, false, 'include');
 
 		if ($pass && $this->params->inc_children == 2)
 		{
 			return $this->_(false);
 		}
-		else if ( ! $pass && $this->params->inc_children)
+
+		if ( ! $pass && $this->params->inc_children)
 		{
 			foreach ($cats as $cat)
 			{
@@ -71,6 +56,28 @@ class MijoshopCategory
 		}
 
 		return $this->passSimple($cats);
+	}
+
+	private function getCats()
+	{
+		if ($this->request->category_id)
+		{
+			return $this->makeArray($this->request->category_id);
+		}
+
+		if ( ! $this->request->item_id)
+		{
+			return [];
+		}
+
+		$query = $this->db->getQuery(true)
+			->select('c.category_id')
+			->from('#__mijoshop_product_to_category AS c')
+			->where('c.product_id = ' . (int) $this->request->id);
+		$this->db->setQuery($query);
+		$cats = $this->db->loadColumn();
+
+		return $this->makeArray($cats);
 	}
 
 	private function getCatParentIds($id = 0)

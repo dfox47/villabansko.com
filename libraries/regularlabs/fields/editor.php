@@ -1,15 +1,18 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Factory as JFactory;
+use RegularLabs\Library\Field;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -18,19 +21,12 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-class JFormFieldRL_Editor extends \RegularLabs\Library\Field
+class JFormFieldRL_Editor extends Field
 {
 	public $type = 'Editor';
 
-	protected function getLabel()
-	{
-		return '';
-	}
-
 	protected function getInput()
 	{
-		$this->params = $this->element->attributes();
-
 		$width  = $this->get('width', '100%');
 		$height = $this->get('height', 400);
 
@@ -41,5 +37,10 @@ class JFormFieldRL_Editor extends \RegularLabs\Library\Field
 		$html   = $editor->display($this->name, $this->value, $width, $height, true, $this->id);
 
 		return '</div><div>' . $html;
+	}
+
+	protected function getLabel()
+	{
+		return '';
 	}
 }

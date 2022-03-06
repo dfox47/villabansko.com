@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,8 +13,10 @@ namespace RegularLabs\Library;
 
 defined('_JEXEC') or die;
 
-use JFactory;
-use JHttpFactory;
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\Http\HttpFactory as JHttpFactory;
+use Joomla\Registry\Registry;
+use RegularLabs\Library\CacheNew as Cache;
 use RuntimeException;
 
 /**
@@ -38,7 +40,8 @@ class Http
 			return '';
 		}
 
-		return self::getFromUrl($url, $timeout);
+		return @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => $timeout]]))
+			|| self::getFromUrl($url, $timeout);
 	}
 
 	/**
@@ -51,18 +54,17 @@ class Http
 	 */
 	public static function getFromUrl($url, $timeout = 20)
 	{
-		$cache_id = 'getUrl_' . $url;
+		$cache     = new Cache([__METHOD__, $url]);
+		$cache_ttl = JFactory::getApplication()->input->getInt('cache', 0);
 
-		if (Cache::has($cache_id))
+		if ($cache_ttl)
 		{
-			return Cache::get($cache_id);
+			$cache->useFiles($cache_ttl > 1 ? $cache_ttl : null);
 		}
 
-		if (JFactory::getApplication()->input->getInt('cache', 0)
-			&& $content = Cache::read($cache_id)
-		)
+		if ($cache->exists())
 		{
-			return $content;
+			return $cache->get();
 		}
 
 		$content = self::getContents($url, $timeout);
@@ -72,12 +74,34 @@ class Http
 			return '';
 		}
 
-		if ($ttl = JFactory::getApplication()->input->getInt('cache', 0))
+		return $cache->set($content);
+	}
+
+	/**
+	 * Load the contents of the given url
+	 *
+	 * @param string $url
+	 * @param int    $timeout
+	 *
+	 * @return string
+	 */
+	private static function getContents($url, $timeout = 20)
+	{
+		try
 		{
-			return Cache::write($cache_id, $content, $ttl > 1 ? $ttl : 0);
+			// Adding a valid user agent string, otherwise some feed-servers returning an error
+			$options = new Registry([
+				'userAgent' => 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:41.0) Gecko/20100101 Firefox/41.0',
+			]);
+
+			$content = JHttpFactory::getHttp($options)->get($url, null, $timeout)->body;
+		}
+		catch (RuntimeException $e)
+		{
+			return '';
 		}
 
-		return Cache::set($cache_id, $content);
+		return $content;
 	}
 
 	/**
@@ -90,11 +114,17 @@ class Http
 	 */
 	public static function getFromServer($url, $timeout = 20)
 	{
-		$cache_id = 'getByUrl_' . $url;
+		$cache     = new Cache([__METHOD__, $url]);
+		$cache_ttl = JFactory::getApplication()->input->getInt('cache', 0);
 
-		if (Cache::has($cache_id))
+		if ($cache_ttl)
 		{
-			return Cache::get($cache_id);
+			$cache->useFiles($cache_ttl > 1 ? $cache_ttl : null);
+		}
+
+		if ($cache->exists())
+		{
+			return $cache->get();
 		}
 
 		// only allow url calls from administrator
@@ -104,7 +134,7 @@ class Http
 		}
 
 		// only allow when logged in
-		$user = JFactory::getUser();
+		$user = JFactory::getApplication()->getIdentity() ?: JFactory::getUser();
 		if ( ! $user->id)
 		{
 			die;
@@ -148,34 +178,7 @@ class Http
 		header("Cache-Control: public");
 		header("Content-type: " . $format);
 
-		if ($ttl = JFactory::getApplication()->input->getInt('cache', 0))
-		{
-			return Cache::write($cache_id, $content, $ttl > 1 ? $ttl : 0);
-		}
-
-		return Cache::set($cache_id, $content);
-	}
-
-	/**
-	 * Load the contents of the given url
-	 *
-	 * @param string $url
-	 * @param int    $timeout
-	 *
-	 * @return string
-	 */
-	private static function getContents($url, $timeout = 20)
-	{
-		try
-		{
-			$content = JHttpFactory::getHttp()->get($url, null, $timeout)->body;
-		}
-		catch (RuntimeException $e)
-		{
-			return '';
-		}
-
-		return $content;
+		return $cache->set($content);
 	}
 
 }

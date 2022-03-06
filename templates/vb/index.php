@@ -115,6 +115,8 @@ $menu = $app->getMenu()->getActive()->id; ?>
 
 	<!-- all scripts in one document -->
 	<script src="/templates/<?php echo $this->template; ?>/all.min.js?v3"></script>
+
+	<script src="//code-ya.jivosite.com/widget/VbnP1QHB7S" async></script>
 </body>
 
 </html>

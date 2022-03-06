@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Sourcerer
- * @version         7.2.0
+ * @version         9.1.0
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,7 +13,7 @@ namespace RegularLabs\Plugin\System\Sourcerer;
 
 defined('_JEXEC') or die;
 
-use JFactory;
+use Joomla\CMS\Factory as JFactory;
 
 class Security
 {
@@ -56,7 +56,7 @@ class Security
 			? (array) $params->articles_security_level
 			: (array) $params->articles_security_level_php;
 
-		$user  = JFactory::getUser();
+		$user  = JFactory::getApplication()->getIdentity() ?: JFactory::getUser();
 		$table = $user->getTable();
 
 		if ($table->load($article->created_by))

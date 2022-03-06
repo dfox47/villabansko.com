@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,10 +13,11 @@ namespace RegularLabs\Plugin\System\RegularLabs;
 
 defined('_JEXEC') or die;
 
-use JFactory;
-use JHtml;
-use JUri;
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\HTML\HTMLHelper as JHtml;
+use Joomla\CMS\Uri\Uri as JUri;
 use RegularLabs\Library\Document as RL_Document;
+use RegularLabs\Library\Http as RL_Http;
 use RegularLabs\Library\RegEx as RL_RegEx;
 
 class QuickPage
@@ -32,7 +33,7 @@ class QuickPage
 
 		if ($url)
 		{
-			echo \RegularLabs\Library\Http::getFromServer($url, JFactory::getApplication()->input->getInt('timeout', ''));
+			echo RL_Http::getFromServer($url, JFactory::getApplication()->input->getInt('timeout', ''));
 
 			die;
 		}
@@ -94,8 +95,12 @@ class QuickPage
 
 		header('Content-Type: ' . $format . '; charset=utf-8');
 		JHtml::_('bootstrap.framework');
-		JFactory::getDocument()->addScript(JUri::root(true) . '/administrator/templates/isis/js/template.js');
-		JFactory::getDocument()->addStylesheet(JUri::root(true) . '/administrator/templates/isis/css/template.css');
+		JFactory::getDocument()->addScript(
+			JUri::root(true) . '/administrator/templates/isis/js/template.js'
+		);
+		JFactory::getDocument()->addStylesheet(
+			JUri::root(true) . '/administrator/templates/isis/css/template' . (JFactory::getDocument()->direction === 'rtl' ? '-rtl' : '') . '.css'
+		);
 
 		RL_Document::style('regularlabs/popup.min.css');
 
@@ -110,7 +115,7 @@ class QuickPage
 			ob_end_clean();
 		}
 
-		RL_Document::setBuffer($html);
+		RL_Document::setComponentBuffer($html);
 
 		$app = new Application;
 		$app->render();
@@ -120,6 +125,9 @@ class QuickPage
 		$html = RL_RegEx::replace('\s*<link [^>]*href="[^"]*templates/system/[^"]*\.css[^"]*"[^>]*( /)?>', '', $html);
 		$html = RL_RegEx::replace('(<body [^>]*class=")', '\1reglab-popup ', $html);
 		$html = str_replace('<body>', '<body class="reglab-popup"', $html);
+
+		// Move the template css down to last
+		$html = RL_RegEx::replace('(<link [^>]*href="[^"]*templates/isis/[^"]*\.css[^"]*"[^>]*(?: /)?>\s*)(.*?)(<script)', '\2\1\3', $html);
 
 		echo $html;
 

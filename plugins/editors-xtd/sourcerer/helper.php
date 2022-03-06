@@ -1,21 +1,23 @@
 <?php
 /**
  * @package         Sourcerer
- * @version         7.2.0
+ * @version         9.1.0
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Object\CMSObject as JObject;
+use RegularLabs\Library\EditorButtonHelper as RL_EditorButtonHelper;
+
 /**
  * Plugin that places the Button
  */
-class PlgButtonSourcererHelper
-	extends \RegularLabs\Library\EditorButtonHelper
+class PlgButtonSourcererHelper extends RL_EditorButtonHelper
 {
 	/**
 	 * Display the button

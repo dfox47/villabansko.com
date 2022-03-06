@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,15 +13,15 @@ namespace RegularLabs\Library\Condition;
 
 defined('_JEXEC') or die;
 
-use JFactory;
+use Joomla\CMS\Factory as JFactory;
+use RegularLabs\Library\Condition;
 use RegularLabs\Library\Document as RL_Document;
 
 /**
  * Class Menu
  * @package RegularLabs\Library\Condition
  */
-class Menu
-	extends \RegularLabs\Library\Condition
+class Menu extends Condition
 {
 	public function pass()
 	{
@@ -65,11 +65,6 @@ class Menu
 		return $this->_(false);
 	}
 
-	private function getMenuParentIds($id = 0)
-	{
-		return $this->getParentIds($id, 'menu');
-	}
-
 	private function getMenuType()
 	{
 		if (isset($this->request->menutype))
@@ -88,7 +83,7 @@ class Menu
 		{
 			$menu = JFactory::getApplication()->getMenu()->getItem((int) $this->request->Itemid);
 
-			$this->request->menutype = isset($menu->menutype) ? $menu->menutype : '';
+			$this->request->menutype = $menu->menutype ?? '';
 
 			return $this->request->menutype;
 		}
@@ -101,5 +96,10 @@ class Menu
 		$this->request->menutype = $this->db->loadResult();
 
 		return $this->request->menutype;
+	}
+
+	private function getMenuParentIds($id = 0)
+	{
+		return $this->getParentIds($id, 'menu');
 	}
 }

@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,9 +13,18 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/text.php';
-require_once dirname(__DIR__) . '/string.php';
-require_once dirname(__DIR__) . '/assignment.php';
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\Language\LanguageHelper as JLanguageHelper;
+use Joomla\CMS\Uri\Uri as JUri;
+
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/text.php';
+require_once dirname(__FILE__, 2) . '/string.php';
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 class RLAssignmentsHomePage extends RLAssignment
 {
@@ -35,9 +44,9 @@ class RLAssignmentsHomePage extends RLAssignment
 			if ( ! $this->request->option)
 			{
 				// set the view/task/layout in the menu item to empty if not set
-				$home->query['view']   = isset($home->query['view']) ? $home->query['view'] : '';
-				$home->query['task']   = isset($home->query['task']) ? $home->query['task'] : '';
-				$home->query['layout'] = isset($home->query['layout']) ? $home->query['layout'] : '';
+				$home->query['view']   = $home->query['view'] ?? '';
+				$home->query['task']   = $home->query['task'] ?? '';
+				$home->query['layout'] = $home->query['layout'] ?? '';
 			}
 
 			// check set values against home menu query items

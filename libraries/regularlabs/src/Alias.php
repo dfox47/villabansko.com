@@ -1,20 +1,20 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 namespace RegularLabs\Library;
 
-use JApplicationHelper;
-use JFactory;
-
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Application\ApplicationHelper as JApplicationHelper;
+use Joomla\CMS\Factory as JFactory;
 
 /**
  * Class Alias
@@ -42,6 +42,12 @@ class Alias
 		{
 			return self::stringURLUnicodeSlug($string);
 		}
+
+		// Remove < > html entities
+		$string = str_replace(['&lt;', '&gt;'], '', $string);
+
+		// Convert html entities
+		$string = StringHelper::html_entity_decoder($string);
 
 		return JApplicationHelper::stringURLSafe($string);
 	}

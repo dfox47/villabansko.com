@@ -1,7 +1,7 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         18.10.1468
  * 
  * @author          Peter van Westen <info@regularlabs.com>
  * @link            http://www.regularlabs.com
@@ -11,15 +11,17 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\Language\Text as JText;
+use RegularLabs\Library\Document as RL_Document;
+use RegularLabs\Library\StringHelper as RL_String;
+
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
 	return;
 }
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
-
-use RegularLabs\Library\Document as RL_Document;
-use RegularLabs\Library\StringHelper as RL_String;
 
 class JFormFieldRL_Slide extends \RegularLabs\Library\Field
 {

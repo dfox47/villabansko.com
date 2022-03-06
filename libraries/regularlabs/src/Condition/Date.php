@@ -1,64 +1,24 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 namespace RegularLabs\Library\Condition;
 
-defined('_JEXEC') or die;
+use RegularLabs\Library\Condition;
 
-use DateTimeZone;
-use JFactory;
+defined('_JEXEC') or die;
 
 /**
  * Class Date
  * @package RegularLabs\Library\Condition
  */
-abstract class Date
-	extends \RegularLabs\Library\Condition
+abstract class Date extends Condition
 {
-	var $timezone = null;
-	var $dates    = [];
-
-	public function getNow()
-	{
-		return strtotime($this->date->format('Y-m-d H:i:s', true));
-	}
-
-	public function getDate($date = '')
-	{
-		$id = 'date_' . $date;
-
-		if (isset($this->dates[$id]))
-		{
-			return $this->dates[$id];
-		}
-
-		$this->dates[$id] = JFactory::getDate($date);
-
-		if (empty($this->params->ignore_time_zone))
-		{
-			$this->dates[$id]->setTimeZone($this->getTimeZone());
-		}
-
-		return $this->dates[$id];
-	}
-
-	private function getTimeZone()
-	{
-		if ( ! is_null($this->timezone))
-		{
-			return $this->timezone;
-		}
-
-		$this->timezone = new DateTimeZone(JFactory::getApplication()->getCfg('offset'));
-
-		return $this->timezone;
-	}
 }

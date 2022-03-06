@@ -3,7 +3,7 @@
  * @package     Joomla.Site
  * @subpackage  mod_feed
  *
- * @copyright   Copyright (C) 2005 - 2018 Open Source Matters, Inc. All rights reserved.
+ * @copyright   (C) 2006 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -54,9 +54,6 @@ else
 
 	if ($feed !== false)
 	{
-		// Image handling
-		$iUrl   = isset($feed->image) ? $feed->image : null;
-		$iTitle = isset($feed->imagetitle) ? $feed->imagetitle : null;
 		?>
 		<div style="direction: <?php echo $rssrtl ? 'rtl' :'ltr'; ?>; text-align: <?php echo $rssrtl ? 'right' :'left'; ?> !important" class="feed<?php echo $moduleclass_sfx; ?>">
 		<?php
@@ -70,6 +67,12 @@ else
 					</h2>
 			<?php
 		}
+		// Feed date
+		if ($params->get('rssdate', 1)) : ?>
+			<h3>
+			<?php echo JHtml::_('date', $feed->publishedDate, JText::_('DATE_FORMAT_LC3')); ?>
+			</h3>
+		<?php endif;
 		// Feed description
 		if ($params->get('rssdesc', 1))
 		{
@@ -78,9 +81,9 @@ else
 			<?php
 		}
 		// Feed image
-		if ($iUrl && $params->get('rssimage', 1)) :
+		if ($feed->image && $params->get('rssimage', 1)) :
 		?>
-			<img src="<?php echo $iUrl; ?>" alt="<?php echo @$iTitle; ?>"/>
+			<img src="<?php echo $feed->image->uri; ?>" alt="<?php echo $feed->image->title; ?>"/>
 		<?php endif; ?>
 
 
@@ -102,7 +105,11 @@ else
 					<?php else : ?>
 						<span class="feed-link"><?php echo trim($feed[$i]->title); ?></span>
 					<?php endif; ?>
-
+					<?php if ($params->get('rssitemdate', 0)) : ?>
+						<div class="feed-item-date">
+							<?php echo JHtml::_('date', $feed[$i]->publishedDate, JText::_('DATE_FORMAT_LC3')); ?>
+						</div>
+					<?php endif; ?>
 					<?php if ($params->get('rssitemdesc', 1) && $text !== '') : ?>
 						<div class="feed-item-description">
 						<?php

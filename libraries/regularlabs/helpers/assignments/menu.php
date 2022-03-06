@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,7 +13,14 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/assignment.php';
+use Joomla\CMS\Factory as JFactory;
+
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 class RLAssignmentsMenu extends RLAssignment
 {
@@ -59,11 +66,6 @@ class RLAssignmentsMenu extends RLAssignment
 		return $this->pass(false);
 	}
 
-	private function getMenuParentIds($id = 0)
-	{
-		return $this->getParentIds($id, 'menu');
-	}
-
 	private function getMenuType()
 	{
 		if (isset($this->request->menutype))
@@ -78,11 +80,11 @@ class RLAssignmentsMenu extends RLAssignment
 			return $this->request->menutype;
 		}
 
-		if (JFactory::getApplication()->isSite())
+		if (JFactory::getApplication()->isClient('site'))
 		{
 			$menu = JFactory::getApplication()->getMenu()->getItem((int) $this->request->Itemid);
 
-			$this->request->menutype = isset($menu->menutype) ? $menu->menutype : '';
+			$this->request->menutype = $menu->menutype ?? '';
 
 			return $this->request->menutype;
 		}
@@ -95,5 +97,10 @@ class RLAssignmentsMenu extends RLAssignment
 		$this->request->menutype = $this->db->loadResult();
 
 		return $this->request->menutype;
+	}
+
+	private function getMenuParentIds($id = 0)
+	{
+		return $this->getParentIds($id, 'menu');
 	}
 }

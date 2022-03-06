@@ -1,15 +1,19 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\Language\Text as JText;
+use RegularLabs\Library\Field;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -18,18 +22,12 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-use RegularLabs\Library\Document as RL_Document;
-
-class JFormFieldRL_Checkbox extends \RegularLabs\Library\Field
+class JFormFieldRL_Checkbox extends Field
 {
 	public $type = 'Checkbox';
 
 	protected function getInput()
 	{
-		$this->params = $this->element->attributes();
-
-		RL_Document::stylesheet('regularlabs/style.min.css');
-
 		$showcheckall = $this->get('showcheckall', 0);
 
 		$checkall = ($this->value == '*');
@@ -50,31 +48,28 @@ class JFormFieldRL_Checkbox extends \RegularLabs\Library\Field
 				continue;
 			}
 
-			$text   = trim((string) $option);
-			$hasval = 0;
-			if (isset($option['value']))
+			$text = trim((string) $option);
+
+			if ( ! isset($option['value']))
 			{
-				$val      = (string) $option['value'];
-				$disabled = (int) $option['disabled'];
-				$hasval   = 1;
+				$options[] = '<label style="clear:both;"><strong>' . JText::_($text) . '</strong></label>';
+				continue;
 			}
-			if ($hasval)
+
+			$val      = (string) $option['value'];
+			$disabled = (int) $option['disabled'];
+
+			$option = '<input type="checkbox" class="rl_' . $this->id . '" id="' . $this->id . $val . '" name="' . $this->name . '[]" value="' . $val . '"';
+			if ($checkall || in_array($val, $this->value))
 			{
-				$option = '<input type="checkbox" class="rl_' . $this->id . '" id="' . $this->id . $val . '" name="' . $this->name . '[]" value="' . $val . '"';
-				if ($checkall || in_array($val, $this->value))
-				{
-					$option .= ' checked="checked"';
-				}
-				if ($disabled)
-				{
-					$option .= ' disabled="disabled"';
-				}
-				$option .= '> <label for="' . $this->id . $val . '" class="checkboxes">' . JText::_($text) . '</label>';
+				$option .= ' checked="checked"';
 			}
-			else
+			if ($disabled)
 			{
-				$option = '<label style="clear:both;"><strong>' . JText::_($text) . '</strong></label>';
+				$option .= ' disabled="disabled"';
 			}
+			$option .= '> <label for="' . $this->id . $val . '" class="checkboxes">' . JText::_($text) . '</label>';
+
 			$options[] = $option;
 		}
 
@@ -82,19 +77,16 @@ class JFormFieldRL_Checkbox extends \RegularLabs\Library\Field
 
 		if ($showcheckall)
 		{
-			$checkers = [];
-			if ($showcheckall)
-			{
-				$checkers[] = '<input id="rl_checkall_' . $this->id . '" type="checkbox" onclick=" RegularLabsScripts.checkAll( this, \'rl_' . $this->id . '\' );"> ' . JText::_('JALL');
+			$js = "
+				jQuery(document).ready(function() {
+					RegularLabsForm.initCheckAlls('rl_checkall_" . $this->id . "', 'rl_" . $this->id . "');
+				});
+			";
+			JFactory::getDocument()->addScriptDeclaration($js);
 
-				$js = "
-					jQuery(document).ready(function() {
-						RegularLabsScripts.initCheckAlls('rl_checkall_" . $this->id . "', 'rl_" . $this->id . "');
-					});
-				";
-				JFactory::getDocument()->addScriptDeclaration($js);
-			}
-			$options = implode('&nbsp;&nbsp;&nbsp;', $checkers) . '<br>' . $options;
+			$checker = '<input id="rl_checkall_' . $this->id . '" type="checkbox" onclick=" RegularLabsForm.checkAll( this, \'rl_' . $this->id . '\' );"> ' . JText::_('JALL');
+
+			$options = $checker . '<br>' . $options;
 		}
 		$options .= '<input type="hidden" id="' . $this->id . 'x" name="' . $this->name . '' . '[]" value="x" checked="checked">';
 

@@ -1,15 +1,20 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\Language\Text as JText;
+use RegularLabs\Library\Date as RL_Date;
+use RegularLabs\Library\Field;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -18,21 +23,12 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-use RegularLabs\Library\Date as RL_Date;
-
-class JFormFieldRL_DateTime extends \RegularLabs\Library\Field
+class JFormFieldRL_DateTime extends Field
 {
 	public $type = 'DateTime';
 
-	protected function getLabel()
-	{
-		return '';
-	}
-
 	protected function getInput()
 	{
-		$this->params = $this->element->attributes();
-
 		$label  = $this->get('label');
 		$format = $this->get('format');
 
@@ -60,5 +56,10 @@ class JFormFieldRL_DateTime extends \RegularLabs\Library\Field
 		}
 
 		return '</div><div>' . $html;
+	}
+
+	protected function getLabel()
+	{
+		return '';
 	}
 }

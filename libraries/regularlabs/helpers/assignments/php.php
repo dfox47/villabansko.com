@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,7 +13,15 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/assignment.php';
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel as JModel;
+
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 class RLAssignmentsPHP extends RLAssignment
 {
@@ -78,7 +86,7 @@ class RLAssignmentsPHP extends RLAssignment
 			}
 			if ( ! isset($user))
 			{
-				$user = JFactory::getUser();
+				$user = JFactory::getApplication()->getIdentity() ?: JFactory::getUser();
 			}
 			$php .= ';return true;';
 
@@ -111,7 +119,7 @@ class RLAssignmentsPHP extends RLAssignment
 			require_once JPATH_SITE . '/components/com_content/models/article.php';
 		}
 
-		$model = JModelLegacy::getInstance('article', 'contentModel');
+		$model = JModel::getInstance('article', 'contentModel');
 
 		if ( ! method_exists($model, 'getItem'))
 		{

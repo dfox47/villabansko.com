@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Sourcerer
- * @version         7.2.0
+ * @version         9.1.0
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -18,27 +18,6 @@ use RegularLabs\Library\RegEx as RL_RegEx;
 class Area
 {
 	static $prefix = 'SRC';
-
-	public static function tag($string, $area = '')
-	{
-		if (empty($string) || empty($area))
-		{
-			return $string;
-		}
-
-		$string = '<!-- START: ' . self::$prefix . '_' . strtoupper($area) . ' -->' . $string . '<!-- END: ' . self::$prefix . '_' . strtoupper($area) . ' -->';
-
-		if ($area != 'article_text')
-		{
-			return $string;
-		}
-
-		return RL_RegEx::replace(
-			'#(<hr class="system-pagebreak".*?>)#si',
-			'<!-- END: ' . self::$prefix . '_' . strtoupper($area) . ' -->\1<!-- START: ' . self::$prefix . '_' . strtoupper($area) . ' -->',
-			$string
-		);
-	}
 
 	public static function get(&$string, $area = '')
 	{
@@ -55,7 +34,7 @@ class Area
 
 		foreach ($matches as $i => $match)
 		{
-			list($text) = explode($end, $match, 2);
+			[$text] = explode($end, $match, 2);
 			$matches[$i] = [
 				$start . $text . $end,
 				$text,
@@ -63,5 +42,28 @@ class Area
 		}
 
 		return $matches;
+	}
+
+	public static function tag(&$string, $area = '')
+	{
+		if (empty($string) || empty($area))
+		{
+			return false;
+		}
+
+		$string = '<!-- START: ' . self::$prefix . '_' . strtoupper($area) . ' -->' . $string . '<!-- END: ' . self::$prefix . '_' . strtoupper($area) . ' -->';
+
+		if ($area != 'article_text')
+		{
+			return true;
+		}
+
+		$string = RL_RegEx::replace(
+			'#(<hr class="system-pagebreak".*?>)#si',
+			'<!-- END: ' . self::$prefix . '_' . strtoupper($area) . ' -->\1<!-- START: ' . self::$prefix . '_' . strtoupper($area) . ' -->',
+			$string
+		);
+
+		return true;
 	}
 }

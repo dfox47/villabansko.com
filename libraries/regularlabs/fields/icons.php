@@ -1,15 +1,18 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Language\Text as JText;
+use RegularLabs\Library\Field;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -18,18 +21,13 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-use RegularLabs\Library\Document as RL_Document;
-
-class JFormFieldRL_Icons extends \RegularLabs\Library\Field
+class JFormFieldRL_Icons extends Field
 {
 	public $type = 'Icons';
 
 	protected function getInput()
 	{
-		RL_Document::stylesheet('regularlabs/style.min.css');
-
-		$this->params = $this->element->attributes();
-		$value        = $this->value;
+		$value = $this->value;
 		if ( ! is_array($value))
 		{
 			$value = explode(',', $value);
@@ -151,7 +149,7 @@ class JFormFieldRL_Icons extends \RegularLabs\Library\Field
 			$html[] = '<fieldset class="pull-left">';
 			$html[] = '<input type="radio" id="' . $id . '" name="' . $this->name . '"'
 				. ' value="' . htmlspecialchars($class, ENT_COMPAT, 'UTF-8') . '"' . $checked . '>';
-			$html[] = '<label for="' . $id . '" class="btn btn-small"><span class="icon-' . $class . '"></span></label>';
+			$html[] = '<label for="' . $id . '" class="btn btn-small hasTip" title="' . $class . '"><span class="icon-' . $class . '"></span></label>';
 			$html[] = '</fieldset>';
 		}
 

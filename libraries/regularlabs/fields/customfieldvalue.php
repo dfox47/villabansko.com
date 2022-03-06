@@ -1,15 +1,19 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Language\Text as JText;
+use RegularLabs\Library\Field;
+use RegularLabs\Library\StringHelper as RL_String;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -18,29 +22,25 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-use RegularLabs\Library\StringHelper as RL_String;
-
-class JFormFieldRL_CustomFieldValue extends \RegularLabs\Library\Field
+class JFormFieldRL_CustomFieldValue extends Field
 {
 	public $type = 'CustomFieldValue';
 
-	protected function getLabel()
-	{
-		return '';
-	}
-
 	protected function getInput()
 	{
-		$this->params = $this->element->attributes();
-
-		$label       = $this->get('label') ? $this->get('label') : '';
+		$label       = $this->get('label') ?: '';
 		$size        = $this->get('size') ? 'style="width:' . $this->get('size') . 'px"' : '';
-		$class       = 'class="' . ($this->get('class') ? $this->get('class') : 'text_area') . '"';
+		$class       = 'class="' . ($this->get('class') ?: 'text_area') . '"';
 		$this->value = htmlspecialchars(RL_String::html_entity_decoder($this->value), ENT_QUOTES);
 
 		return
 			'</div></div></div>'
 			. '<input type="text" name="' . $this->name . '" id="' . $this->id . '" value="' . $this->value
 			. '" placeholder="' . JText::_($label) . '" title="' . JText::_($label) . '" ' . $class . ' ' . $size . '>';
+	}
+
+	protected function getLabel()
+	{
+		return '';
 	}
 }

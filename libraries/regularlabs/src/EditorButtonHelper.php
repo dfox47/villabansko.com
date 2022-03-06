@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,9 +13,9 @@ namespace RegularLabs\Library;
 
 defined('_JEXEC') or die;
 
-use JHtml;
-use JObject;
-use JText;
+use Joomla\CMS\HTML\HTMLHelper as JHtml;
+use Joomla\CMS\Language\Text as JText;
+use Joomla\CMS\Object\CMSObject as JObject;
 
 /**
  * Class EditorButtonHelper
@@ -39,32 +39,12 @@ class EditorButtonHelper
 		Document::style('regularlabs/style.min.css');
 	}
 
-	public function getButtonText()
-	{
-		$text_ini = strtoupper(str_replace(' ', '_', $this->params->button_text));
-		$text     = JText::_($text_ini);
-
-		if ($text == $text_ini)
-		{
-			$text = JText::_($this->params->button_text);
-		}
-
-		return trim($text);
-	}
-
-	public function getIcon($icon = '')
-	{
-		$icon = $icon ?: $this->_name;
-
-		return 'reglab icon-' . $icon;
-	}
-
 	public function renderPopupButton($editor_name, $width = 0, $height = 0)
 	{
 		$button = new JObject;
 
 		$button->modal   = true;
-		$button->class   = 'btn';
+		$button->class   = 'btn rl_button_' . $this->_name;
 		$button->link    = $this->getPopupLink($editor_name);
 		$button->text    = $this->getButtonText();
 		$button->name    = $this->getIcon();
@@ -79,6 +59,26 @@ class EditorButtonHelper
 			. '&folder=plugins.editors-xtd.' . $this->_name
 			. '&file=popup.php'
 			. '&name=' . $editor_name;
+	}
+
+	public function getButtonText()
+	{
+		$text_ini = strtoupper(str_replace(' ', '_', $this->params->button_text ?? $this->_name));
+		$text     = JText::_($text_ini);
+
+		if ($text == $text_ini)
+		{
+			$text = JText::_($this->params->button_text ?? $this->_name);
+		}
+
+		return trim($text);
+	}
+
+	public function getIcon($icon = '')
+	{
+		$icon = $icon ?: $this->_name;
+
+		return 'reglab icon-' . $icon;
 	}
 
 	public function getPopupOptions($width = 0, $height = 0)

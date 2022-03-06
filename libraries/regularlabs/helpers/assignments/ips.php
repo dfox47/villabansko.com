@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,7 +13,12 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/assignment.php';
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 class RLAssignmentsIPs extends RLAssignment
 {
@@ -77,7 +82,7 @@ class RLAssignmentsIPs extends RLAssignment
 		}
 
 		// check if IP is between or equal to the from and to IP range
-		list($min, $max) = explode('-', trim($range), 2);
+		[$min, $max] = explode('-', trim($range), 2);
 
 		// Return false if IP is smaller than the range start
 		if ($ip < trim($min))
@@ -100,21 +105,6 @@ class RLAssignmentsIPs extends RLAssignment
 	 * So 101.102.103.104-201.202 becomes:
 	 * max: 101.102.201.202
 	 */
-	private function fillMaxRange($max, $min)
-	{
-		$max_parts = explode('.', $max);
-
-		if (count() == 4)
-		{
-			return $max;
-		}
-
-		$min_parts = explode('.', $min);
-
-		$prefix = array_slice($min_parts, 0, count($min_parts) - count($max_parts));
-
-		return implode('.', $prefix) . '.' . implode('.', $max_parts);
-	}
 
 	private function checkIPPart($range)
 	{
@@ -139,5 +129,21 @@ class RLAssignmentsIPs extends RLAssignment
 		}
 
 		return true;
+	}
+
+	private function fillMaxRange($max, $min)
+	{
+		$max_parts = explode('.', $max);
+
+		if (count() == 4)
+		{
+			return $max;
+		}
+
+		$min_parts = explode('.', $min);
+
+		$prefix = array_slice($min_parts, 0, count($min_parts) - count($max_parts));
+
+		return implode('.', $prefix) . '.' . implode('.', $max_parts);
 	}
 }

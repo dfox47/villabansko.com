@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Sourcerer
- * @version         7.2.0
+ * @version         9.1.0
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,11 +13,12 @@ namespace RegularLabs\Plugin\System\Sourcerer;
 
 defined('_JEXEC') or die;
 
-use JFile;
-use JText;
+use Joomla\CMS\Language\Text as JText;
+use Joomla\CMS\Uri\Uri as JUri;
 use RegularLabs\Library\ArrayHelper as RL_Array;
 use RegularLabs\Library\Document as RL_Document;
 use RegularLabs\Library\Html as RL_Html;
+use RegularLabs\Library\ObjectHelper as RL_Object;
 use RegularLabs\Library\PluginTag as RL_PluginTag;
 use RegularLabs\Library\Protect as RL_Protect;
 use RegularLabs\Library\RegEx as RL_RegEx;
@@ -67,9 +68,9 @@ class Replace
 			return;
 		}
 
-		list($start_tags, $end_tags) = Params::getTags();
+		[$start_tags, $end_tags] = Params::getTags();
 
-		list($pre_string, $string, $post_string) = RL_Html::getContentContainingSearches(
+		[$pre_string, $string, $post_string] = RL_Html::getContentContainingSearches(
 			$string,
 			$start_tags,
 			$end_tags
@@ -107,6 +108,37 @@ class Replace
 		$string = $pre_string . $string . $post_string;
 	}
 
+	private static function cleanTags(&$string)
+	{
+		$params = Params::get();
+
+		foreach ($params->html_tags_syntax as $html_tags_syntax)
+		{
+			[$start, $end] = $html_tags_syntax;
+
+			$tag_regex = $start . '\s*(\/?\s*[a-z\!][^' . $end . ']*?(?:\s+.*?)?)' . $end;
+			$string    = RL_RegEx::replace($tag_regex, '<\1\2>', $string);
+		}
+	}
+
+	private static function convertWysiwygToPlainText($content)
+	{
+		$content = RL_Html::convertWysiwygToPlainText($content);
+
+		// Remove trailing spaces from EOT lines
+		$content = RL_RegEx::replace('(=\s*<<<([^\s]+)) ?(\n.*?\2;) ?', '\1\3', $content);
+
+		return $content;
+	}
+
+	private static function getPhpFileCodeByType($file, $type)
+	{
+	}
+
+	private static function getPhpFilesCode($data)
+	{
+	}
+
 	private static function handleMatch(&$match, $area = 'article', $article = '', $remove = false)
 	{
 		if ($remove)
@@ -116,25 +148,29 @@ class Replace
 
 		$params = Params::get();
 
-		$data    = RL_PluginTag::getAttributesFromStringOld(trim($match['data']), []);
+		$data        = trim($match['data']);
+		$remove_html = ! isset($data[0]) || $data[0] !== '0';
+
+		$data = trim($match['data'], '0 ');
+		// Remove spaces inside list values
+		$data = RL_RegEx::replace('(="[^"]*,) ', '\1', $data);
+		// Convert new syntax to old
+		$data = str_replace(['"', ' '], ['', '|'], $data);
+		// Get attributes from old syntax (we still need this to handle the unquoted stuff)
+		$data = RL_PluginTag::getAttributesFromStringOld($data, []);
+
 		$content = trim($match['content']);
 
-		$remove_html = ! in_array('0', $data->params);
+		$remove_html = (isset($data->raw) && $data->raw) ? false : $remove_html;
 
 		// Remove html tags if code is placed via the WYSIWYG editor
 		if ($remove_html)
 		{
-			$content = RL_Html::convertWysiwygToPlainText($content);
+			$content = self::convertWysiwygToPlainText($content);
 		}
 
 		self::replacePhpShortCodes($content);
 
-		// Add the include file if file=... or include=... is used in the {source} tag
-		$file = ! empty($data->file) ? $data->file : (! empty($data->include) ? $data->include : '');
-		if ( ! empty($file) && JFile::exists(JPATH_SITE . $params->include_path . $file))
-		{
-			$content = '<?php include JPATH_SITE . \'' . $params->include_path . $file . '\'; ?>' . $content;
-		}
 
 		self::replaceTags($content, $area, $article);
 
@@ -143,7 +179,7 @@ class Replace
 			return $content;
 		}
 
-		$trim = isset($data->trim) ? $data->trim : $params->trim;
+		$trim = $data->trim ?? $params->trim;
 
 		if ($trim)
 		{
@@ -172,6 +208,22 @@ class Replace
 		return $content;
 	}
 
+	private static function loadFiles($data, &$content)
+	{
+	}
+
+	private static function loadMediaFile($file, $type, $options = false)
+	{
+	}
+
+	private static function loadScripts($data)
+	{
+	}
+
+	private static function loadStylesheets($data)
+	{
+	}
+
 	private static function replacePhpShortCodes(&$string)
 	{
 		// Replace <? with <?php
@@ -187,10 +239,8 @@ class Replace
 			return;
 		}
 
-		$params = Params::get();
-
 		// allow in component?
-		if (RL_Protect::isRestrictedComponent(isset($params->components) ? $params->components : [], $area))
+		if (RL_Protect::isRestrictedComponent(Params::get('components', []), $area))
 		{
 			Protect::protectTags($string);
 
@@ -201,40 +251,6 @@ class Replace
 		self::replaceTagsByType($string, $area, 'all');
 		self::replaceTagsByType($string, $area, 'js');
 		self::replaceTagsByType($string, $area, 'css');
-	}
-
-	private static function replaceTagsByType(&$string, $area = 'article', $type = 'all', $article = '')
-	{
-		if ( ! is_string($string) || $string == '')
-		{
-			return;
-		}
-
-		$type_ext = '_' . $type;
-		if ($type == 'all')
-		{
-			$type_ext = '';
-		}
-
-		$a             = Params::getArea('default');
-		$security_pass = true;
-		$enable = isset($a->{'enable' . $type_ext}) ? $a->{'enable' . $type_ext} : true;
-
-		switch ($type)
-		{
-			case 'php':
-				self::replaceTagsPHP($string, $enable, $security_pass, $article);
-				break;
-			case 'js':
-				self::replaceTagsJS($string, $enable, $security_pass);
-				break;
-			case 'css':
-				self::replaceTagsCSS($string, $enable, $security_pass);
-				break;
-			default:
-				self::replaceTagsAll($string, $enable, $security_pass);
-				break;
-		}
 	}
 
 	/**
@@ -326,6 +342,154 @@ class Replace
 		}
 	}
 
+	private static function replaceTagsByType(&$string, $area = 'article', $type = 'all', $article = '')
+	{
+		if ( ! is_string($string) || $string == '')
+		{
+			return;
+		}
+
+		$type_ext = '_' . $type;
+		if ($type == 'all')
+		{
+			$type_ext = '';
+		}
+
+		$a             = Params::getArea('default');
+		$security_pass = true;
+		$enable = $a->{'enable' . $type_ext} ?? true;
+
+		switch ($type)
+		{
+			case 'php':
+				self::replaceTagsPHP($string, $enable, $security_pass, $article);
+				break;
+			case 'js':
+				self::replaceTagsJS($string, $enable, $security_pass);
+				break;
+			case 'css':
+				self::replaceTagsCSS($string, $enable, $security_pass);
+				break;
+			default:
+				self::replaceTagsAll($string, $enable, $security_pass);
+				break;
+		}
+	}
+
+	/**
+	 * Replace the CSS tags by a comment tag if not permitted
+	 */
+	private static function replaceTagsCSS(&$string, $enabled = 1, $security_pass = 1)
+	{
+		if ( ! is_string($string) || $string == '')
+		{
+			return;
+		}
+
+		// quick check to see if i is necessary to do anything
+		if ((strpos($string, 'style') === false) && (strpos($string, 'link') === false))
+		{
+			return;
+		}
+
+		// Match:
+		// <script ...>...</script>
+		$tag_regex =
+			'(-start-' . '\s*style\s[^' . '-end-' . ']*?[^/]\s*' . '-end-'
+			. '(.*?)'
+			. '-start-' . '\s*\/\s*style\s*' . '-end-)';
+		$arr       = self::stringToSplitArray($string, $tag_regex);
+		$arr_count = count($arr);
+
+		// Match:
+		// <script ...>
+		// single script tags are not xhtml compliant and should not occur, but just in case they do...
+		if ($arr_count == 1)
+		{
+			$tag_regex = '(-start-' . '\s*link\s[^' . '-end-' . ']*?(rel="stylesheet"|type="text/css").*?' . '-end-)';
+			$arr       = self::stringToSplitArray($string, $tag_regex);
+			$arr_count = count($arr);
+		}
+
+		if ($arr_count <= 1)
+		{
+			return;
+		}
+
+		if ( ! $enabled)
+		{
+			// replace source block content with HTML comment
+			$string = Protect::getMessageCommentTag(JText::sprintf('SRC_CODE_REMOVED_NOT_ALLOWED', JText::_('SRC_CSS')));
+
+			return;
+		}
+
+		if ( ! $security_pass)
+		{
+			// replace source block content with HTML comment
+			$string = Protect::getMessageCommentTag(JText::sprintf('SRC_CODE_REMOVED_SECURITY', JText::_('SRC_CSS')));
+
+			return;
+		}
+	}
+
+	/**
+	 * Replace the JavaScript tags by a comment tag if not permitted
+	 */
+	private static function replaceTagsJS(&$string, $enabled = 1, $security_pass = 1)
+	{
+		if ( ! is_string($string) || $string == '')
+		{
+			return;
+		}
+
+		// quick check to see if i is necessary to do anything
+		if ((strpos($string, 'script') === false))
+		{
+			return;
+		}
+
+		// Match:
+		// <script ...>...</script>
+		$tag_regex =
+			'(-start-' . '\s*script\s[^' . '-end-' . ']*?[^/]\s*' . '-end-'
+			. '(.*?)'
+			. '-start-' . '\s*\/\s*script\s*' . '-end-)';
+		$arr       = self::stringToSplitArray($string, $tag_regex);
+		$arr_count = count($arr);
+
+		// Match:
+		// <script ...>
+		// single script tags are not xhtml compliant and should not occur, but just incase they do...
+		if ($arr_count == 1)
+		{
+			$tag_regex = '(-start-' . '\s*script\s.*?' . '-end-)';
+			$arr       = self::stringToSplitArray($string, $tag_regex);
+			$arr_count = count($arr);
+		}
+
+		if ($arr_count <= 1)
+		{
+			return;
+		}
+
+		if ( ! $enabled)
+		{
+			// replace source block content with HTML comment
+			$string = Protect::getMessageCommentTag(JText::sprintf('SRC_CODE_REMOVED_NOT_ALLOWED', JText::_('SRC_JAVASCRIPT')));
+
+			return;
+		}
+
+		if ( ! $security_pass)
+		{
+			// replace source block content with HTML comment
+			$string = Protect::getMessageCommentTag(JText::sprintf('SRC_CODE_REMOVED_SECURITY', JText::_('SRC_JAVASCRIPT')));
+
+			return;
+		}
+	}
+
 	/**
 	 * Replace the PHP tags with the evaluated PHP scripts
 	 * Or replace by a comment tag the PHP tags if not permitted
@@ -359,7 +523,7 @@ class Replace
 		{
 			// replace source block content with HTML comment
 			$string_array    = [];
-			$string_array[0] = Protect::getMessageCommentTag(JText::sprintf('SRC_CODE_REMOVED_NOT_ALLOWED', JText::_('SRC_PHP'), JText::_('SRC_PHP')));
+			$string_array[0] = Protect::getMessageCommentTag(JText::sprintf('SRC_CODE_REMOVED_NOT_ALLOWED', JText::_('SRC_PHP')));
 
 			$string = implode('', $string_array);
 
@@ -429,125 +593,11 @@ class Replace
 
 		$src_variables['article'] = $article;
 
-		$output = Code::run($script, $src_variables);
+		$output = Code::run($script, $src_variables, Params::get('tmp_path'));
 
 		$string_array[1] = $output;
 
 		$string = implode('', $string_array);
-	}
-
-	/**
-	 * Replace the JavaScript tags by a comment tag if not permitted
-	 */
-	private static function replaceTagsJS(&$string, $enabled = 1, $security_pass = 1)
-	{
-		if ( ! is_string($string) || $string == '')
-		{
-			return;
-		}
-
-		// quick check to see if i is necessary to do anything
-		if ((strpos($string, 'script') === false))
-		{
-			return;
-		}
-
-		// Match:
-		// <script ...>...</script>
-		$tag_regex =
-			'(-start-' . '\s*script\s[^' . '-end-' . ']*?[^/]\s*' . '-end-'
-			. '(.*?)'
-			. '-start-' . '\s*\/\s*script\s*' . '-end-)';
-		$arr       = self::stringToSplitArray($string, $tag_regex);
-		$arr_count = count($arr);
-
-		// Match:
-		// <script ...>
-		// single script tags are not xhtml compliant and should not occur, but just incase they do...
-		if ($arr_count == 1)
-		{
-			$tag_regex = '(-start-' . '\s*script\s.*?' . '-end-)';
-			$arr       = self::stringToSplitArray($string, $tag_regex);
-			$arr_count = count($arr);
-		}
-
-		if ($arr_count <= 1)
-		{
-			return;
-		}
-
-		if ( ! $enabled)
-		{
-			// replace source block content with HTML comment
-			$string = Protect::getMessageCommentTag(JText::sprintf('SRC_CODE_REMOVED_NOT_ALLOWED', JText::_('SRC_JAVASCRIPT'), JText::_('SRC_JAVASCRIPT')));
-
-			return;
-		}
-
-		if ( ! $security_pass)
-		{
-			// replace source block content with HTML comment
-			$string = Protect::getMessageCommentTag(JText::sprintf('SRC_CODE_REMOVED_SECURITY', JText::_('SRC_JAVASCRIPT')));
-
-			return;
-		}
-	}
-
-	/**
-	 * Replace the CSS tags by a comment tag if not permitted
-	 */
-	private static function replaceTagsCSS(&$string, $enabled = 1, $security_pass = 1)
-	{
-		if ( ! is_string($string) || $string == '')
-		{
-			return;
-		}
-
-		// quick check to see if i is necessary to do anything
-		if ((strpos($string, 'style') === false) && (strpos($string, 'link') === false))
-		{
-			return;
-		}
-
-		// Match:
-		// <script ...>...</script>
-		$tag_regex =
-			'(-start-' . '\s*style\s[^' . '-end-' . ']*?[^/]\s*' . '-end-'
-			. '(.*?)'
-			. '-start-' . '\s*\/\s*style\s*' . '-end-)';
-		$arr       = self::stringToSplitArray($string, $tag_regex);
-		$arr_count = count($arr);
-
-		// Match:
-		// <script ...>
-		// single script tags are not xhtml compliant and should not occur, but just in case they do...
-		if ($arr_count == 1)
-		{
-			$tag_regex = '(-start-' . '\s*link\s[^' . '-end-' . ']*?(rel="stylesheet"|type="text/css").*?' . '-end-)';
-			$arr       = self::stringToSplitArray($string, $tag_regex);
-			$arr_count = count($arr);
-		}
-
-		if ($arr_count <= 1)
-		{
-			return;
-		}
-
-		if ( ! $enabled)
-		{
-			// replace source block content with HTML comment
-			$string = Protect::getMessageCommentTag(JText::sprintf('SRC_CODE_REMOVED_NOT_ALLOWED', JText::_('SRC_CSS'), JText::_('SRC_CSS')));
-
-			return;
-		}
-
-		if ( ! $security_pass)
-		{
-			// replace source block content with HTML comment
-			$string = Protect::getMessageCommentTag(JText::sprintf('SRC_CODE_REMOVED_SECURITY', JText::_('SRC_CSS')));
-
-			return;
-		}
 	}
 
 	private static function stringToSplitArray($string, $search, $tags = true)
@@ -563,7 +613,7 @@ class Replace
 
 		foreach ($params->html_tags_syntax as $html_tags_syntax)
 		{
-			list($start, $end) = $html_tags_syntax;
+			[$start, $end] = $html_tags_syntax;
 
 			$tag_search = str_replace('-start-', $start, $search);
 			$tag_search = str_replace('-end-', $end, $tag_search);
@@ -571,18 +621,5 @@ class Replace
 		}
 
 		return explode($params->splitter, $string);
-	}
-
-	private static function cleanTags(&$string)
-	{
-		$params = Params::get();
-
-		foreach ($params->html_tags_syntax as $html_tags_syntax)
-		{
-			list($start, $end) = $html_tags_syntax;
-
-			$tag_regex = $start . '\s*(\/?\s*[a-z\!][^' . $end . ']*?(?:\s+.*?)?)' . $end;
-			$string    = RL_RegEx::replace($tag_regex, '<\1\2>', $string);
-		}
 	}
 }

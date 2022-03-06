@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,19 +13,20 @@ namespace RegularLabs\Library\Condition;
 
 defined('_JEXEC') or die;
 
-use JFactory;
+use Joomla\CMS\Factory as JFactory;
 use RegularLabs\Library\DB as RL_DB;
 
 /**
  * Class UserGrouplevel
  * @package RegularLabs\Library\Condition
  */
-class UserGrouplevel
-	extends User
+class UserGrouplevel extends User
 {
+	static $user_group_children;
+
 	public function pass()
 	{
-		$user = JFactory::getUser();
+		$user = JFactory::getApplication()->getIdentity() ?: JFactory::getUser();
 
 		if ( ! empty($user->groups))
 		{
@@ -51,11 +52,18 @@ class UserGrouplevel
 		return $this->passSimple($groups);
 	}
 
-	private function passMatchAll($groups)
+	private function setUserGroupChildrenIds()
 	{
-		$pass = ! array_diff($this->selection, $groups) && ! array_diff($groups, $this->selection);
+		$children = $this->getUserGroupChildrenIds($this->selection);
 
-		return $this->_($pass);
+		if ($this->params->inc_children == 2)
+		{
+			$this->selection = $children;
+
+			return;
+		}
+
+		$this->selection = array_merge($this->selection, $children);
 	}
 
 	private function convertUsergroupNamesToIds($selection)
@@ -93,35 +101,20 @@ class UserGrouplevel
 		return array_unique(array_merge($selection, $group_ids));
 	}
 
-	private function setUserGroupChildrenIds()
+	private function passMatchAll($groups)
 	{
-		$children = $this->getUserGroupChildrenIds($this->selection);
+		$pass = ! array_diff($this->selection, $groups) && ! array_diff($groups, $this->selection);
 
-		if ($this->params->inc_children == 2)
-		{
-			$this->selection = $children;
-
-			return;
-		}
-
-		$this->selection = array_merge($this->selection, $children);
+		return $this->_($pass);
 	}
 
 	private function getUserGroupChildrenIds($groups)
 	{
 		$children = [];
 
-		$db = JFactory::getDbo();
-
 		foreach ($groups as $group)
 		{
-			$query = $db->getQuery(true)
-				->select($db->quoteName('id'))
-				->from($db->quoteName('#__usergroups'))
-				->where($db->quoteName('parent_id') . ' = ' . (int) $group);
-			$db->setQuery($query);
-
-			$group_children = $db->loadColumn();
+			$group_children = $this->getUserGroupChildrenIdsByGroup($group);
 
 			if (empty($group_children))
 			{
@@ -143,5 +136,36 @@ class UserGrouplevel
 		$children = array_unique($children);
 
 		return $children;
+	}
+
+	private function getUserGroupChildrenIdsByGroup($group)
+	{
+		$group = (int) $group;
+
+		if ( ! is_null(self::$user_group_children))
+		{
+			return self::$user_group_children[$group] ?? [];
+		}
+
+		$db = JFactory::getDbo();
+
+		$query = $db->getQuery(true)
+			->select(['id', 'parent_id'])
+			->from($db->quoteName('#__usergroups'));
+		$db->setQuery($query);
+
+		$groups = $db->loadAssocList('id', 'parent_id');
+
+		foreach ($groups as $id => $parent)
+		{
+			if ( ! isset(self::$user_group_children[$parent]))
+			{
+				self::$user_group_children[$parent] = [];
+			}
+
+			self::$user_group_children[$parent][] = $id;
+		}
+
+		return self::$user_group_children[$group] ?? [];
 	}
 }

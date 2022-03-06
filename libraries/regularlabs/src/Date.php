@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -14,51 +14,10 @@ namespace RegularLabs\Library;
 defined('_JEXEC') or die;
 
 use DateTimeZone;
-use JFactory;
+use Joomla\CMS\Factory as JFactory;
 
 class Date
 {
-	/**
-	 * Convert string to a correct date format ('00-00-00 00:00:00' or '00-00-00') or null
-	 *
-	 * @param string $date
-	 *
-	 * @return null|string
-	 */
-	public static function fix($date)
-	{
-		if ( ! $date)
-		{
-			return null;
-		}
-
-		$date = trim($date);
-
-		// Check if date has correct syntax: 00-00-00 00:00:00
-		// If so, the date format is correct
-		if ( ! RegEx::match('^[0-9]+-[0-9]+-[0-9]+( [0-9][0-9]:[0-9][0-9]:[0-9][0-9])?$', $date))
-		{
-			return $date;
-		}
-
-		// Check if date has syntax: 00-00-00 00:00
-		// If so, it is missing the seconds, so add :00 (seconds)
-		if (RegEx::match('^[0-9]+-[0-9]+-[0-9]+ [0-9][0-9]:[0-9][0-9]$', $date))
-		{
-			return $date . ':00';
-		}
-
-		// Check if date has a prepending date syntax: 00-00-00
-		// If so, it is missing a correct time time, so add 00:00:00 (hours, minutes, seconds)
-		if (RegEx::match('^([0-9]+-[0-9]+-[0-9]+)$', $date, $match))
-		{
-			return $match[1] . ' 00:00:00';
-		}
-
-		// Date format is not correct, so return null
-		return null;
-	}
-
 	/**
 	 * Applies offset to a date
 	 *
@@ -74,7 +33,8 @@ class Date
 			return;
 		}
 
-		$timezone = $timezone ?: JFactory::getUser()->getParam('timezone', JFactory::getConfig()->get('offset'));
+		$user     = JFactory::getApplication()->getIdentity() ?: JFactory::getUser();
+		$timezone = $timezone ?: $user->getParam('timezone', JFactory::getConfig()->get('offset'));
 
 		$date = JFactory::getDate($date, $timezone);
 		$date->setTimezone(new DateTimeZone('UTC'));
@@ -89,63 +49,9 @@ class Date
 	 *
 	 * @return string
 	 */
-	public static function strftimeToDateFormat($format)
-	{
-		if (strpos($format, '%') === false)
-		{
-			return $format;
-		}
-
-		return strtr((string) $format, self::getStrftimeToDateFormats());
-	}
-
-	/**
-	 * Convert string with 'date' format to 'strftime' format
-	 *
-	 * @param string $format
-	 *
-	 * @return string
-	 */
 	public static function dateToStrftimeFormat($format)
 	{
 		return strtr((string) $format, self::getDateToStrftimeFormats());
-	}
-
-	private static function getStrftimeToDateFormats()
-	{
-		return [
-			// Day
-			'%d'  => 'd',
-			'%a'  => 'D',
-			'%#d' => 'j',
-			'%A'  => 'l',
-			'%u'  => 'N',
-			'%w'  => 'w',
-			'%j'  => 'z',
-			// Week
-			'%V'  => 'W',
-			// Month
-			'%B'  => 'F',
-			'%m'  => 'm',
-			'%b'  => 'M',
-			// Year
-			'%G'  => 'o',
-			'%Y'  => 'Y',
-			'%y'  => 'y',
-			// Time
-			'%P'  => 'a',
-			'%p'  => 'A',
-			'%l'  => 'g',
-			'%I'  => 'h',
-			'%H'  => 'H',
-			'%M'  => 'i',
-			'%S'  => 's',
-			// Timezone
-			'%z'  => 'O',
-			'%Z'  => 'T',
-			// Full Date / Time
-			'%s'  => 'U',
-		];
 	}
 
 	private static function getDateToStrftimeFormats()
@@ -183,6 +89,101 @@ class Date
 			'T'  => '%Z',
 			// Full Date / Time - no strf eq : c, r; no date eq : %c, %D, %F, %x
 			'U'  => '%s',
+		];
+	}
+
+	/**
+	 * Convert string to a correct date format ('00-00-00 00:00:00' or '00-00-00') or null
+	 *
+	 * @param string $date
+	 *
+	 * @return null|string
+	 */
+	public static function fix($date)
+	{
+		if ( ! $date)
+		{
+			return null;
+		}
+
+		$date = trim($date);
+
+		// Check if date has correct syntax: 00-00-00 00:00:00
+		// If so, the date format is correct
+		if (RegEx::match('^[0-9]+-[0-9]+-[0-9]+( [0-9][0-9]:[0-9][0-9]:[0-9][0-9])?$', $date))
+		{
+			return $date;
+		}
+
+		// Check if date has syntax: 00-00-00 00:00
+		// If so, it is missing the seconds, so add :00 (seconds)
+		if (RegEx::match('^[0-9]+-[0-9]+-[0-9]+ [0-9][0-9]:[0-9][0-9]$', $date))
+		{
+			return $date . ':00';
+		}
+
+		// Check if date has a prepending date syntax: 00-00-00
+		// If so, it is missing a correct time time, so add 00:00:00 (hours, minutes, seconds)
+		if (RegEx::match('^([0-9]+-[0-9]+-[0-9]+)$', $date, $match))
+		{
+			return $match[1] . ' 00:00:00';
+		}
+
+		// Date format is not correct, so return null
+		return null;
+	}
+
+	/**
+	 * Convert string with 'date' format to 'strftime' format
+	 *
+	 * @param string $format
+	 *
+	 * @return string
+	 */
+	public static function strftimeToDateFormat($format)
+	{
+		if (strpos($format, '%') === false)
+		{
+			return $format;
+		}
+
+		return strtr((string) $format, self::getStrftimeToDateFormats());
+	}
+
+	private static function getStrftimeToDateFormats()
+	{
+		return [
+			// Day
+			'%d'  => 'd',
+			'%a'  => 'D',
+			'%#d' => 'j',
+			'%A'  => 'l',
+			'%u'  => 'N',
+			'%w'  => 'w',
+			'%j'  => 'z',
+			// Week
+			'%V'  => 'W',
+			// Month
+			'%B'  => 'F',
+			'%m'  => 'm',
+			'%b'  => 'M',
+			// Year
+			'%G'  => 'o',
+			'%Y'  => 'Y',
+			'%y'  => 'y',
+			// Time
+			'%P'  => 'a',
+			'%p'  => 'A',
+			'%l'  => 'g',
+			'%I'  => 'h',
+			'%H'  => 'H',
+			'%M'  => 'i',
+			'%S'  => 's',
+			// Timezone
+			'%z'  => 'O',
+			'%Z'  => 'T',
+			// Full Date / Time
+			'%s'  => 'U',
 		];
 	}
 }

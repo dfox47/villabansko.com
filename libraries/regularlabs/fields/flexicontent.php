@@ -1,13 +1,15 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
+
+use RegularLabs\Library\FieldGroup;
 
 defined('_JEXEC') or die;
 
@@ -18,27 +20,19 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-class JFormFieldRL_FlexiContent extends \RegularLabs\Library\FieldGroup
+class JFormFieldRL_FlexiContent extends FieldGroup
 {
-	public $type          = 'FlexiContent';
 	public $default_group = 'Tags';
+	public $type          = 'FlexiContent';
 
-	protected function getInput()
-	{
-		if ($error = $this->missingFilesOrTables(['tags', 'types']))
-		{
-			return $error;
-		}
-
-		return $this->getSelectList();
-	}
-
-	function getTags()
+	public function getTags()
 	{
 		$query = $this->db->getQuery(true)
 			->select('t.name as id, t.name')
 			->from('#__flexicontent_tags AS t')
 			->where('t.published = 1')
+			->where('t.name != ' . $this->db->quote(''))
+			->group('t.name')
 			->order('t.name');
 		$this->db->setQuery($query);
 		$list = $this->db->loadObjectList();
@@ -46,7 +40,7 @@ class JFormFieldRL_FlexiContent extends \RegularLabs\Library\FieldGroup
 		return $this->getOptionsByList($list);
 	}
 
-	function getTypes()
+	public function getTypes()
 	{
 		$query = $this->db->getQuery(true)
 			->select('t.id, t.name')
@@ -57,5 +51,12 @@ class JFormFieldRL_FlexiContent extends \RegularLabs\Library\FieldGroup
 		$list = $this->db->loadObjectList();
 
 		return $this->getOptionsByList($list);
+	}
+
+	protected function getInput()
+	{
+		$error = $this->missingFilesOrTables(['tags', 'types']);
+
+		return $error ?: $this->getSelectList();
 	}
 }

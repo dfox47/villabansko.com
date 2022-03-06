@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,14 +13,13 @@ namespace RegularLabs\Library\Condition;
 
 defined('_JEXEC') or die;
 
-use JFactory;
+use Joomla\CMS\Factory as JFactory;
 
 /**
  * Class K2Category
  * @package RegularLabs\Library\Condition
  */
-class K2Category
-	extends K2
+class K2Category extends K2
 {
 	public function pass()
 	{
@@ -44,7 +43,7 @@ class K2Category
 		}
 
 		$cats = $this->makeArray($this->getCategories());
-		$pass = $this->passSimple($cats, 'include');
+		$pass = $this->passSimple($cats, false, 'include');
 
 		if ($pass && $this->params->inc_children == 2)
 		{
@@ -78,9 +77,11 @@ class K2Category
 		}
 	}
 
-	private function getCategoryID()
+	private function getCatParentIds($id = 0)
 	{
-		return $this->request->id ?: JFactory::getApplication()->getUserStateFromRequest('com_k2itemsfilter_category', 'catid', 0, 'int');
+		$parent_field = RL_K2_VERSION == 3 ? 'parent_id' : 'parent';
+
+		return $this->getParentIds($id, 'k2_categories', $parent_field);
 	}
 
 	private function getCategoryIDFromItem()
@@ -88,6 +89,11 @@ class K2Category
 		if ($this->article && isset($this->article->catid))
 		{
 			return $this->article->catid;
+		}
+
+		if ( ! $this->request->id)
+		{
+			return $this->getCategoryID();
 		}
 
 		$query = $this->db->getQuery(true)
@@ -99,10 +105,8 @@ class K2Category
 		return $this->db->loadResult();
 	}
 
-	private function getCatParentIds($id = 0)
+	private function getCategoryID()
 	{
-		$parent_field = RL_K2_VERSION == 3 ? 'parent_id' : 'parent';
-
-		return $this->getParentIds($id, 'k2_categories', $parent_field);
+		return $this->request->id ?: JFactory::getApplication()->getUserStateFromRequest('com_k2itemsfilter_category', 'catid', 0, 'int');
 	}
 }

@@ -1,17 +1,18 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
 
-require_once JPATH_LIBRARIES . '/joomla/form/fields/text.php';
+use Joomla\CMS\Language\Text as JText;
+use RegularLabs\Library\StringHelper as RL_String;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -20,7 +21,7 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-use RegularLabs\Library\StringHelper as RL_String;
+JFormHelper::loadFieldClass('text');
 
 class JFormFieldRL_Text extends JFormFieldText
 {
@@ -54,10 +55,10 @@ class JFormFieldRL_Text extends JFormFieldText
 		$var4 = JText::_($this->get('var4'));
 		$var5 = JText::_($this->get('var5'));
 
-		$string = JText::sprintf(JText::_($string), $var1, $var2, $var3, $var4, $var5);
+		$string = JText::sprintf($string, $var1, $var2, $var3, $var4, $var5);
 		$string = trim(RL_String::html_entity_decoder($string));
 		$string = str_replace('&quot;', '"', $string);
-		$string = str_replace('span style="font-family:monospace;"', 'span class="rl_code"', $string);
+		$string = str_replace('span style="font-family:monospace;"', 'span class="rl-code"', $string);
 
 		return $string;
 	}

@@ -1,15 +1,19 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Form\FormField as JFormField;
+use RegularLabs\Library\Document as RL_Document;
+use RegularLabs\Library\RegEx as RL_RegEx;
 
 jimport('joomla.form.formfield');
 
@@ -19,9 +23,6 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 }
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
-
-use RegularLabs\Library\Document as RL_Document;
-use RegularLabs\Library\RegEx as RL_RegEx;
 
 class JFormFieldRL_Color extends JFormField
 {
@@ -42,7 +43,7 @@ class JFormFieldRL_Color extends JFormField
 
 class RLFieldColor
 {
-	function getInput($name, $id, $value, $params)
+	public function getInput($name, $id, $value, $params)
 	{
 		$this->name   = $name;
 		$this->id     = $id;

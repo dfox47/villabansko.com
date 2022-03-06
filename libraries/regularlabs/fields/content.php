@@ -1,15 +1,20 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\HTML\HTMLHelper as JHtml;
+use Joomla\CMS\Language\Text as JText;
+use RegularLabs\Library\ArrayHelper as RL_ArrayHelper;
+use RegularLabs\Library\FieldGroup;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -18,11 +23,11 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-class JFormFieldRL_Content extends \RegularLabs\Library\FieldGroup
+class JFormFieldRL_Content extends FieldGroup
 {
 	public $type = 'Content';
 
-	function getCategories()
+	public function getCategories()
 	{
 		$query = $this->db->getQuery(true)
 			->select('COUNT(*)')
@@ -37,6 +42,8 @@ class JFormFieldRL_Content extends \RegularLabs\Library\FieldGroup
 		{
 			return -1;
 		}
+
+		$this->value = RL_ArrayHelper::toArray($this->value);
 
 		// assemble items to the array
 		$options = [];
@@ -62,7 +69,7 @@ class JFormFieldRL_Content extends \RegularLabs\Library\FieldGroup
 		return $options;
 	}
 
-	function getItems()
+	public function getItems()
 	{
 		$query = $this->db->getQuery(true)
 			->select('COUNT(*)')

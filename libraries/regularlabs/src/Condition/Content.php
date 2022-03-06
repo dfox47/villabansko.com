@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,16 +13,17 @@ namespace RegularLabs\Library\Condition;
 
 defined('_JEXEC') or die;
 
-use JModelLegacy;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel as JModel;
+use RegularLabs\Library\Condition;
+use RegularLabs\Library\ConditionContent;
 
 /**
  * Class Content
  * @package RegularLabs\Library\Condition
  */
-abstract class Content
-	extends \RegularLabs\Library\Condition
+abstract class Content extends Condition
 {
-	use \RegularLabs\Library\ConditionContent;
+	use ConditionContent;
 
 	public function getItem($fields = [])
 	{
@@ -36,7 +37,7 @@ abstract class Content
 			require_once JPATH_SITE . '/components/com_content/models/article.php';
 		}
 
-		$model = JModelLegacy::getInstance('article', 'contentModel');
+		$model = JModel::getInstance('article', 'contentModel');
 
 		if ( ! method_exists($model, 'getItem'))
 		{

@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,29 +13,15 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/assignment.php';
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 class RLAssignmentsHikaShop extends RLAssignment
 {
-	public function passPageTypes()
-	{
-		if ($this->request->option != 'com_hikashop')
-		{
-			return $this->pass(false);
-		}
-
-		$type = $this->request->view;
-		if (
-			($type == 'product' && in_array($this->request->layout, ['contact', 'show']))
-			|| ($type == 'user' && in_array($this->request->layout, ['cpanel']))
-		)
-		{
-			$type .= '_' . $this->request->layout;
-		}
-
-		return $this->passSimple($type);
-	}
-
 	public function passCategories()
 	{
 		if ($this->request->option != 'com_hikashop')
@@ -74,16 +60,6 @@ class RLAssignmentsHikaShop extends RLAssignment
 		return $this->passSimple($cats);
 	}
 
-	public function passProducts()
-	{
-		if ( ! $this->request->id || $this->request->option != 'com_hikashop' || $this->request->view != 'product')
-		{
-			return $this->pass(false);
-		}
-
-		return $this->passSimple($this->request->id);
-	}
-
 	private function getCategories()
 	{
 		switch (true)
@@ -116,5 +92,34 @@ class RLAssignmentsHikaShop extends RLAssignment
 	private function getCatParentIds($id = 0)
 	{
 		return $this->getParentIds($id, 'hikashop_category', 'category_parent_id', 'category_id');
+	}
+
+	public function passPageTypes()
+	{
+		if ($this->request->option != 'com_hikashop')
+		{
+			return $this->pass(false);
+		}
+
+		$type = $this->request->view;
+		if (
+			($type == 'product' && in_array($this->request->layout, ['contact', 'show']))
+			|| ($type == 'user' && in_array($this->request->layout, ['cpanel']))
+		)
+		{
+			$type .= '_' . $this->request->layout;
+		}
+
+		return $this->passSimple($type);
+	}
+
+	public function passProducts()
+	{
+		if ( ! $this->request->id || $this->request->option != 'com_hikashop' || $this->request->view != 'product')
+		{
+			return $this->pass(false);
+		}
+
+		return $this->passSimple($this->request->id);
 	}
 }

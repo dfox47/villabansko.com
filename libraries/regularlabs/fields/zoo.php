@@ -1,15 +1,20 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\HTML\HTMLHelper as JHtml;
+use Joomla\CMS\Language\Text as JText;
+use RegularLabs\Library\FieldGroup;
+use RegularLabs\Library\Form as RL_Form;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -18,23 +23,11 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-use RegularLabs\Library\Form as RL_Form;
-
-class JFormFieldRL_Zoo extends \RegularLabs\Library\FieldGroup
+class JFormFieldRL_Zoo extends FieldGroup
 {
 	public $type = 'Zoo';
 
-	protected function getInput()
-	{
-		if ($error = $this->missingFilesOrTables(['applications' => 'application', 'categories' => 'category', 'items' => 'item']))
-		{
-			return $error;
-		}
-
-		return $this->getSelectList();
-	}
-
-	function getCategories()
+	public function getCategories()
 	{
 		$query = $this->db->getQuery(true)
 			->select('COUNT(*)')
@@ -92,7 +85,7 @@ class JFormFieldRL_Zoo extends \RegularLabs\Library\FieldGroup
 				foreach ($items as $v)
 				{
 					$pt   = $v->parent_id;
-					$list = @$children[$pt] ? $children[$pt] : [];
+					$list = @$children[$pt] ?: [];
 					array_push($list, $v);
 					$children[$pt] = $list;
 				}
@@ -116,7 +109,7 @@ class JFormFieldRL_Zoo extends \RegularLabs\Library\FieldGroup
 		return $options;
 	}
 
-	function getItems()
+	public function getItems()
 	{
 		$query = $this->db->getQuery(true)
 			->select('COUNT(*)')
@@ -139,5 +132,16 @@ class JFormFieldRL_Zoo extends \RegularLabs\Library\FieldGroup
 		$list = $this->db->loadObjectList();
 
 		return $this->getOptionsByList($list, ['cat', 'id']);
+	}
+
+	protected function getInput()
+	{
+		$error = $this->missingFilesOrTables(['applications' => 'application', 'categories' => 'category', 'items' => 'item']);
+		if ($error)
+		{
+			return $error;
+		}
+
+		return $this->getSelectList();
 	}
 }

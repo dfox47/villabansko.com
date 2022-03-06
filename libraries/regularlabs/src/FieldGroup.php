@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,27 +13,30 @@ namespace RegularLabs\Library;
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Language\Text as JText;
 use Joomla\Registry\Registry;
-use JText;
 
-class FieldGroup
-	extends Field
+class FieldGroup extends Field
 {
-	public $type          = 'Field';
 	public $default_group = 'Categories';
+	public $type          = 'Field';
 
-	protected function getInput()
+	public function getAjaxRaw(Registry $attributes)
 	{
-		$this->params = $this->element->attributes();
+		$this->params = $attributes;
 
-		return $this->getSelectList();
-	}
+		$name     = $attributes->get('name', $this->type);
+		$id       = $attributes->get('id', strtolower($name));
+		$value    = $attributes->get('value', []);
+		$size     = $attributes->get('size');
+		$multiple = $attributes->get('multiple');
+		$simple   = $attributes->get('simple');
 
-	public function getGroup()
-	{
-		$this->params = $this->element->attributes();
+		$options = $this->getOptions(
+			$attributes->get('group')
+		);
 
-		return $this->get('group', $this->default_group ?: $this->type);
+		return $this->selectList($options, $name, $value, $id, $size, $multiple, $simple);
 	}
 
 	public function getOptions($group = false)
@@ -49,6 +52,20 @@ class FieldGroup
 		return $data[$id];
 	}
 
+	public function getGroup()
+	{
+		$this->params = $this->element->attributes();
+
+		return $this->get('group', $this->default_group ?: $this->type);
+	}
+
+	protected function getInput()
+	{
+		$this->params = $this->element->attributes();
+
+		return $this->getSelectList();
+	}
+
 	public function getSelectList($group = '')
 	{
 		if ( ! is_array($this->value))
@@ -56,8 +73,9 @@ class FieldGroup
 			$this->value = explode(',', $this->value);
 		}
 
-		$size     = (int) $this->get('size');
-		$multiple = $this->get('multiple');
+		$size        = (int) $this->get('size');
+		$multiple    = $this->get('multiple');
+		$show_ignore = $this->get('show_ignore');
 
 		$group = $group ?: $this->getGroup();
 
@@ -65,25 +83,9 @@ class FieldGroup
 
 		return $this->selectListAjax(
 			$this->type, $this->name, $this->value, $this->id,
-			compact('group', 'size', 'multiple', 'simple'),
+			compact('group', 'size', 'multiple', 'simple', 'show_ignore'),
 			$simple
 		);
-	}
-
-	function getAjaxRaw(Registry $attributes)
-	{
-		$name     = $attributes->get('name', $this->type);
-		$id       = $attributes->get('id', strtolower($name));
-		$value    = $attributes->get('value', []);
-		$size     = $attributes->get('size');
-		$multiple = $attributes->get('multiple');
-		$simple   = $attributes->get('simple');
-
-		$options = $this->getOptions(
-			$attributes->get('group')
-		);
-
-		return $this->selectList($options, $name, $value, $id, $size, $multiple, $simple);
 	}
 
 	public function missingFilesOrTables($tables = ['categories', 'items'], $component = '', $table_prefix = '')
@@ -105,7 +107,7 @@ class FieldGroup
 
 		$table_list = $this->db->getTableList();
 
-		$table = isset($tables[$group]) ? $tables[$group] : $group;
+		$table = $tables[$group] ?? $group;
 		$table = $this->db->getPrefix() . strtolower($table_prefix ?: $component) . '_' . $table;
 
 		if (in_array($table, $table_list))

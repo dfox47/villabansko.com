@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Sourcerer
- * @version         7.2.0
+ * @version         9.1.0
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -15,9 +15,9 @@ require_once __DIR__ . '/script.install.helper.php';
 
 class PlgEditorsXtdSourcererInstallerScript extends PlgEditorsXtdSourcererInstallerScriptHelper
 {
-	public $name           = 'SOURCERER';
 	public $alias          = 'sourcerer';
 	public $extension_type = 'plugin';
+	public $name           = 'SOURCERER';
 	public $plugin_folder  = 'editors-xtd';
 
 	public function uninstall($adapter)

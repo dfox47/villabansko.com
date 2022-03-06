@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,7 +13,14 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/assignment.php';
+use Joomla\CMS\Factory as JFactory;
+
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 class RLAssignmentsRedShop extends RLAssignment
 {
@@ -22,11 +29,6 @@ class RLAssignmentsRedShop extends RLAssignment
 		$this->request->item_id     = JFactory::getApplication()->input->getInt('pid', 0);
 		$this->request->category_id = JFactory::getApplication()->input->getInt('cid', 0);
 		$this->request->id          = ($this->request->item_id) ? $this->request->item_id : $this->request->category_id;
-	}
-
-	public function passPageTypes()
-	{
-		return $this->passByPageTypes('com_redshop', $this->selection, $this->assignment, true);
 	}
 
 	public function passCategories()
@@ -82,6 +84,16 @@ class RLAssignmentsRedShop extends RLAssignment
 		return $this->passSimple($cats);
 	}
 
+	private function getCatParentIds($id = 0)
+	{
+		return $this->getParentIds($id, 'redshop_category_xref', 'category_parent_id', 'category_child_id');
+	}
+
+	public function passPageTypes()
+	{
+		return $this->passByPageTypes('com_redshop', $this->selection, $this->assignment, true);
+	}
+
 	public function passProducts()
 	{
 		if ( ! $this->request->id || $this->request->option != 'com_redshop' || $this->request->view != 'product')
@@ -90,10 +102,5 @@ class RLAssignmentsRedShop extends RLAssignment
 		}
 
 		return $this->passSimple($this->request->id);
-	}
-
-	private function getCatParentIds($id = 0)
-	{
-		return $this->getParentIds($id, 'redshop_category_xref', 'category_parent_id', 'category_child_id');
 	}
 }

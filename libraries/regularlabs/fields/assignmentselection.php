@@ -1,15 +1,20 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\Language\Text as JText;
+use RegularLabs\Library\Field;
+use RegularLabs\Library\StringHelper as RL_String;
 
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
@@ -18,24 +23,15 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-use RegularLabs\Library\Document as RL_Document;
-use RegularLabs\Library\StringHelper as RL_String;
-
-class JFormFieldRL_AssignmentSelection extends \RegularLabs\Library\Field
+/**
+ * @deprecated  2018-10-30  Use ConditionSelection instead
+ */
+class JFormFieldRL_AssignmentSelection extends Field
 {
 	public $type = 'AssignmentSelection';
 
-	protected function getLabel()
-	{
-		return '';
-	}
-
 	protected function getInput()
 	{
-		$this->params = $this->element->attributes();
-
-		RL_Document::stylesheet('regularlabs/style.min.css');
-
 		require_once __DIR__ . '/toggler.php';
 		$toggler = new RLFieldToggler;
 
@@ -77,9 +73,12 @@ class JFormFieldRL_AssignmentSelection extends \RegularLabs\Library\Field
 			$class .= ' alert-error';
 		}
 		$html[] = '<div class="' . $class . '">';
-		if ($showclose && JFactory::getUser()->authorise('core.admin'))
+
+		$user = JFactory::getApplication()->getIdentity() ?: JFactory::getUser();
+
+		if ($showclose && $user->authorise('core.admin'))
 		{
-			$html[] = '<button type="button" class="close rl_remove_assignment">&times;</button>';
+			$html[] = '<button type="button" class="close rl_remove_assignment" aria-label="Close">&times;</button>';
 		}
 
 		$html[] = '<div class="control-group">';
@@ -91,16 +90,16 @@ class JFormFieldRL_AssignmentSelection extends \RegularLabs\Library\Field
 		$html[] = '<div class="controls">';
 		$html[] = '<fieldset id="' . $this->id . '"  class="radio btn-group">';
 
-		$onclick = ' onclick="RegularLabsScripts.setToggleTitleClass(this, 0)"';
+		$onclick = ' onclick="RegularLabsForm.setToggleTitleClass(this, 0)"';
 		$html[]  = '<input type="radio" id="' . $this->id . '0" name="' . $this->name . '" value="0"' . (( ! $this->value) ? ' checked="checked"' : '') . $onclick . '>';
 		$html[]  = '<label class="rl_btn-ignore" for="' . $this->id . '0">' . JText::_('RL_IGNORE') . '</label>';
 
-		$onclick = ' onclick="RegularLabsScripts.setToggleTitleClass(this, 1)"';
+		$onclick = ' onclick="RegularLabsForm.setToggleTitleClass(this, 1)"';
 		$html[]  = '<input type="radio" id="' . $this->id . '1" name="' . $this->name . '" value="1"' . (($this->value === 1) ? ' checked="checked"' : '') . $onclick . '>';
 		$html[]  = '<label class="rl_btn-include" for="' . $this->id . '1">' . JText::_('RL_INCLUDE') . '</label>';
 
-		$onclick = ' onclick="RegularLabsScripts.setToggleTitleClass(this, 2)"';
-		$onclick .= ' onload="RegularLabsScripts.setToggleTitleClass(this, ' . $this->value . ', 7)"';
+		$onclick = ' onclick="RegularLabsForm.setToggleTitleClass(this, 2)"';
+		$onclick .= ' onload="RegularLabsForm.setToggleTitleClass(this, ' . $this->value . ', 7)"';
 		$html[]  = '<input type="radio" id="' . $this->id . '2" name="' . $this->name . '" value="2"' . (($this->value === 2) ? ' checked="checked"' : '') . $onclick . '>';
 		$html[]  = '<label class="rl_btn-exclude" for="' . $this->id . '2">' . JText::_('RL_EXCLUDE') . '</label>';
 
@@ -114,5 +113,10 @@ class JFormFieldRL_AssignmentSelection extends \RegularLabs\Library\Field
 		$html[] = '<div><div>';
 
 		return '</div>' . implode('', $html);
+	}
+
+	protected function getLabel()
+	{
+		return '';
 	}
 }

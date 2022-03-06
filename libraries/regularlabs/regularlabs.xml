@@ -1,26 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension version="3.4" type="library" method="upgrade">
+<extension version="3.9" type="library" method="upgrade">
 	<name>Regular Labs Library</name>
-	<libraryname>regularlabs</libraryname>
-	<description></description>
-	<version>18.2.10140</version>
-	<creationDate>February 2018</creationDate>
+	<description>Regular Labs Library - used by Regular Labs extensions</description>
+	<version>22.2.6887</version>
+	<creationDate>February 2022</creationDate>
 	<author>Regular Labs (Peter van Westen)</author>
 	<authorEmail>info@regularlabs.com</authorEmail>
-	<authorUrl>https://www.regularlabs.com</authorUrl>
-	<copyright>Copyright © 2018 Regular Labs - All Rights Reserved</copyright>
+	<authorUrl>https://regularlabs.com</authorUrl>
+	<copyright>Copyright © 2022 Regular Labs - All Rights Reserved</copyright>
 	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
 
+	<libraryname>regularlabs</libraryname>
 	<scriptfile>script.install.php</scriptfile>
 
+	<updateservers>
+		<server type="extension" priority="1" name="Regular Labs Library">
+			https://download.regularlabs.com/updates.xml?e=library&amp;type=.xml
+		</server>
+	</updateservers>
+
 	<files>
-		<folder>vendor</folder>
-		<folder>src</folder>
 		<file>autoload.php</file>
 		<file>regularlabs.xml</file>
+		<file>script.install.helper.php</file>
 		<folder>fields</folder>
 		<folder>helpers</folder>
-		<filename>script.install.helper.php</filename>
+		<folder>layouts</folder>
+		<folder>src</folder>
+		<folder>vendor</folder>
 	</files>
 
 	<media folder="media" destination="regularlabs">

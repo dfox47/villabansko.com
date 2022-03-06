@@ -1,7 +1,7 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         18.10.1468
  * 
  * @author          Peter van Westen <info@regularlabs.com>
  * @link            http://www.regularlabs.com
@@ -11,14 +11,15 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Form\FormField as JFormField;
+use RegularLabs\Library\Document as RL_Document;
+
 if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
 	return;
 }
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
-
-use RegularLabs\Library\Document as RL_Document;
 
 class JFormFieldRL_HR extends JFormField
 {

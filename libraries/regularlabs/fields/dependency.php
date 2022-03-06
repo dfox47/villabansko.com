@@ -1,15 +1,20 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\Language\Text as JText;
+use RegularLabs\Library\Field;
+use RegularLabs\Library\RegEx as RL_RegEx;
 
 jimport('joomla.form.formfield');
 
@@ -20,26 +25,15 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-use RegularLabs\Library\Document as RL_Document;
-use RegularLabs\Library\RegEx as RL_RegEx;
-
-class JFormFieldRL_Dependency extends \RegularLabs\Library\Field
+class JFormFieldRL_Dependency extends Field
 {
 	public $type = 'Dependency';
 
-	protected function getLabel()
-	{
-		return '';
-	}
-
 	protected function getInput()
 	{
-		$this->params = $this->element->attributes();
+		$file = $this->get('file');
 
-		JHtml::_('jquery.framework');
-		RL_Document::script('regularlabs/script.min.js');
-
-		if ($file = $this->get('file'))
+		if ($file)
 		{
 			$label = $this->get('label', 'the main extension');
 
@@ -56,10 +50,10 @@ class JFormFieldRL_Dependency extends \RegularLabs\Library\Field
 
 		switch ($extension)
 		{
-			case 'com';
+			case 'com':
 				$file = $path . '/components/com_' . $file . '/com_' . $file . '.xml';
 				break;
-			case 'mod';
+			case 'mod':
 				$file = $path . '/modules/mod_' . $file . '/mod_' . $file . '.xml';
 				break;
 			default:
@@ -73,6 +67,11 @@ class JFormFieldRL_Dependency extends \RegularLabs\Library\Field
 
 		return '';
 	}
+
+	protected function getLabel()
+	{
+		return '';
+	}
 }
 
 class RLFieldDependency
@@ -82,35 +81,30 @@ class RLFieldDependency
 		jimport('joomla.filesystem.file');
 
 		$file = str_replace('\\', '/', $file);
-		if (strpos($file, '/administrator') === 0)
-		{
-			$file = str_replace('/administrator', JPATH_ADMINISTRATOR, $file);
-		}
-		else
-		{
-			$file = JPATH_SITE . '/' . $file;
-		}
+		$file = (strpos($file, '/administrator') === 0)
+			? str_replace('/administrator', JPATH_ADMINISTRATOR, $file)
+			: JPATH_SITE . '/' . $file;
+
 		$file = str_replace('//', '/', $file);
 
 		$file_alt = RL_RegEx::replace('(com|mod)_([a-z-_]+\.)', '\2', $file);
 
-		if ( ! JFile::exists($file) && ! JFile::exists($file_alt))
+		if (file_exists($file) || file_exists($file_alt))
 		{
-			$msg          = JText::sprintf('RL_THIS_EXTENSION_NEEDS_THE_MAIN_EXTENSION_TO_FUNCTION', JText::_($name));
-			$message_set  = 0;
-			$messageQueue = JFactory::getApplication()->getMessageQueue();
-			foreach ($messageQueue as $queue_message)
+			return;
+		}
+
+		$msg          = JText::sprintf('RL_THIS_EXTENSION_NEEDS_THE_MAIN_EXTENSION_TO_FUNCTION', JText::_($name));
+		$messageQueue = JFactory::getApplication()->getMessageQueue();
+
+		foreach ($messageQueue as $queue_message)
+		{
+			if ($queue_message['type'] == 'error' && $queue_message['message'] == $msg)
 			{
-				if ($queue_message['type'] == 'error' && $queue_message['message'] == $msg)
-				{
-					$message_set = 1;
-					break;
-				}
-			}
-			if ( ! $message_set)
-			{
-				JFactory::getApplication()->enqueueMessage($msg, 'error');
+				return;
 			}
 		}
+
+		JFactory::getApplication()->enqueueMessage($msg, 'error');
 	}
 }

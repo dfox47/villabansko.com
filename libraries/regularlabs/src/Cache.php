@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,24 +13,20 @@ namespace RegularLabs\Library;
 
 defined('_JEXEC') or die;
 
-use JFactory;
+use Joomla\CMS\Factory as JFactory;
 
 /**
  * Class Cache
- * @package RegularLabs\Library
+ * @package    RegularLabs\Library
+ * @deprecated Use CacheNew
  */
 class Cache
 {
-	static $group = 'regularlabs';
 	static $cache = [];
+	static $group = 'regularlabs';
 
 	// Is the cached object in the cache memory?
-	public static function has($id)
-	{
-		return isset(self::$cache[md5($id)]);
-	}
 
-	// Get the cached object from the cache memory
 	public static function get($id)
 	{
 		$hash = md5($id);
@@ -43,17 +39,22 @@ class Cache
 		return is_object(self::$cache[$hash]) ? clone self::$cache[$hash] : self::$cache[$hash];
 	}
 
-	// Save the cached object to the cache memory
-	public static function set($id, $data)
-	{
-		self::$cache[md5($id)] = $data;
+	// Get the cached object from the cache memory
 
-		return $data;
+	public static function has($id)
+	{
+		return isset(self::$cache[md5($id)]);
 	}
 
-	// Get the cached object from the Joomla cache
+	// Save the cached object to the cache memory
+
 	public static function read($id)
 	{
+		if (JFactory::getApplication()->get('debug'))
+		{
+			return false;
+		}
+
 		$hash = md5($id);
 
 		if (isset(self::$cache[$hash]))
@@ -66,9 +67,15 @@ class Cache
 		return $cache->get($hash);
 	}
 
-	// Save the cached object to the Joomla cache
+	// Get the cached object from the Joomla cache
+
 	public static function write($id, $data, $time_to_life_in_minutes = 0, $force_caching = true)
 	{
+		if (JFactory::getApplication()->get('debug'))
+		{
+			return $data;
+		}
+
 		$hash = md5($id);
 
 		self::$cache[$hash] = $data;
@@ -89,6 +96,15 @@ class Cache
 		$cache->store($data, $hash);
 
 		self::set($hash, $data);
+
+		return $data;
+	}
+
+	// Save the cached object to the Joomla cache
+
+	public static function set($id, $data)
+	{
+		self::$cache[md5($id)] = $data;
 
 		return $data;
 	}

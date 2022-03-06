@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,7 +13,15 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/assignment.php';
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\Log\Log as JLog;
+
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 class RLAssignmentsGeo extends RLAssignment
 {
@@ -32,55 +40,6 @@ class RLAssignmentsGeo extends RLAssignment
 		return $this->passSimple([$this->geo->continent, $this->geo->continentCode]);
 	}
 
-	/**
-	 * passCountries
-	 */
-	public function passCountries()
-	{
-		$this->getGeo();
-
-		if ( ! $this->getGeo() || empty($this->geo->countryCode))
-		{
-			return $this->pass(false);
-		}
-
-		return $this->passSimple([$this->geo->country, $this->geo->countryCode]);
-	}
-
-	/**
-	 * passRegions
-	 */
-	public function passRegions()
-	{
-		if ( ! $this->getGeo() || empty($this->geo->countryCode) || empty($this->geo->regionCodes))
-		{
-			return $this->pass(false);
-		}
-
-		$regions = $this->geo->regionCodes;
-		array_walk($regions, function (&$value) {
-			$value = $this->geo->countryCode . '-' . $value;
-		});
-
-		return $this->passSimple($regions);
-	}
-
-	/**
-	 * passPostalcodes
-	 */
-	public function passPostalcodes()
-	{
-		if ( ! $this->getGeo() || empty($this->geo->postalCode))
-		{
-			return $this->pass(false);
-		}
-
-		// replace dashes with dots: 730-0011 => 730.0011
-		$postalcode = str_replace('-', '.', $this->geo->postalCode);
-
-		return $this->passInRange($postalcode);
-	}
-
 	public function getGeo($ip = '')
 	{
 		if ($this->geo !== null)
@@ -97,7 +56,7 @@ class RLAssignmentsGeo extends RLAssignment
 
 		$this->geo = $geo->get();
 
-		if (JDEBUG)
+		if (JFactory::getApplication()->get('debug'))
 		{
 			JLog::addLogger(['text_file' => 'regularlabs_geoip.log.php'], JLog::ALL, ['regularlabs_geoip']);
 			JLog::add(json_encode($this->geo), JLog::DEBUG, 'regularlabs_geoip');
@@ -121,5 +80,54 @@ class RLAssignmentsGeo extends RLAssignment
 		}
 
 		return new RegularLabs_GeoIp($ip);
+	}
+
+	/**
+	 * passCountries
+	 */
+	public function passCountries()
+	{
+		$this->getGeo();
+
+		if ( ! $this->getGeo() || empty($this->geo->countryCode))
+		{
+			return $this->pass(false);
+		}
+
+		return $this->passSimple([$this->geo->country, $this->geo->countryCode]);
+	}
+
+	/**
+	 * passPostalcodes
+	 */
+	public function passPostalcodes()
+	{
+		if ( ! $this->getGeo() || empty($this->geo->postalCode))
+		{
+			return $this->pass(false);
+		}
+
+		// replace dashes with dots: 730-0011 => 730.0011
+		$postalcode = str_replace('-', '.', $this->geo->postalCode);
+
+		return $this->passInRange($postalcode);
+	}
+
+	/**
+	 * passRegions
+	 */
+	public function passRegions()
+	{
+		if ( ! $this->getGeo() || empty($this->geo->countryCode) || empty($this->geo->regionCodes))
+		{
+			return $this->pass(false);
+		}
+
+		$regions = $this->geo->regionCodes;
+		array_walk($regions, function (&$value) {
+			$value = $this->geo->countryCode . '-' . $value;
+		});
+
+		return $this->passSimple($regions);
 	}
 }

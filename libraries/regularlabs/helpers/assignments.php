@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,20 +13,15 @@
 
 defined('_JEXEC') or die;
 
+use RegularLabs\Library\Conditions as RL_Conditions;
+
 if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 {
 	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 }
 
-use RegularLabs\Library\Conditions as RL_Conditions;
-
 class RLAssignmentsHelper
 {
-	function passAll($assignments, $matching_method = 'all', $article = 0)
-	{
-		return RL_Conditions::pass($assignments, $matching_method, $article);
-	}
-
 	public function getAssignmentsFromParams(&$params)
 	{
 		return RL_Conditions::getConditionsFromParams($params);
@@ -40,5 +35,10 @@ class RLAssignmentsHelper
 	public function hasAssignments(&$assignments)
 	{
 		return RL_Conditions::hasConditions($assignments);
+	}
+
+	public function passAll($assignments, $matching_method = 'all', $item = 0)
+	{
+		return RL_Conditions::pass($assignments, $matching_method, $item);
 	}
 }

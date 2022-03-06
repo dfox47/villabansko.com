@@ -1,13 +1,15 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
+
+use RegularLabs\Library\FieldGroup;
 
 defined('_JEXEC') or die;
 
@@ -18,21 +20,11 @@ if ( ! is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 
 require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 
-class JFormFieldRL_HikaShop extends \RegularLabs\Library\FieldGroup
+class JFormFieldRL_HikaShop extends FieldGroup
 {
 	public $type = 'HikaShop';
 
-	protected function getInput()
-	{
-		if ($error = $this->missingFilesOrTables(['categories' => 'category', 'products' => 'product']))
-		{
-			return $error;
-		}
-
-		return $this->getSelectList();
-	}
-
-	function getCategories()
+	public function getCategories()
 	{
 		$query = $this->db->getQuery(true)
 			->select('COUNT(*)')
@@ -65,7 +57,7 @@ class JFormFieldRL_HikaShop extends \RegularLabs\Library\FieldGroup
 		return $this->getOptionsTreeByList($items, $root);
 	}
 
-	function getProducts()
+	public function getProducts()
 	{
 		$query = $this->db->getQuery(true)
 			->select('COUNT(*)')
@@ -90,5 +82,12 @@ class JFormFieldRL_HikaShop extends \RegularLabs\Library\FieldGroup
 		$list = $this->db->loadObjectList();
 
 		return $this->getOptionsByList($list, ['cat', 'id']);
+	}
+
+	protected function getInput()
+	{
+		$error = $this->missingFilesOrTables(['categories' => 'category', 'products' => 'product']);
+
+		return $error ?: $this->getSelectList();
 	}
 }

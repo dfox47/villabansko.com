@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Sourcerer
- * @version         7.2.0
+ * @version         8.3.0
  * 
  * @author          Peter van Westen <info@regularlabs.com>
  * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @copyright       Copyright © 2020 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -24,11 +24,11 @@ if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
 	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
 }
 
-use JFactory;
-use JInstaller;
-use JPlugin;
-use JPluginHelper;
-use JText;
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\Installer\Installer as JInstaller;
+use Joomla\CMS\Language\Text as JText;
+use Joomla\CMS\Plugin\CMSPlugin as JPlugin;
+use Joomla\CMS\Plugin\PluginHelper as JPluginHelper;
 use ReflectionMethod;
 use RegularLabs\Library\Document as RL_Document;
 use RegularLabs\Library\Language as RL_Language;
@@ -92,6 +92,15 @@ class Plugin extends JPlugin
 				continue;
 			}
 			$arguments[] = $caller['args'][$count];
+		}
+
+		// Work-around for K2 stuff :(
+		if ($event == 'onContentPrepare'
+			&& empty($arguments[1]->id)
+			&& strpos($arguments[0], 'com_k2') === 0
+		)
+		{
+			return false;
 		}
 
 		return call_user_func_array([$this->_helper, $event], $arguments);
@@ -224,6 +233,20 @@ class Plugin extends JPlugin
 
 	public function extraChecks()
 	{
+		$input = JFactory::getApplication()->input;
+
+		// Disable on Gridbox edit form: option=com_gridbox&view=gridbox
+		if ($input->get('option') == 'com_gridbox' && $input->get('view') == 'gridbox')
+		{
+			return false;
+		}
+
+		// Disable on SP PageBuilder edit form: option=com_sppagebuilder&view=form
+		if ($input->get('option') == 'com_sppagebuilder' && $input->get('view') == 'form')
+		{
+			return false;
+		}
+
 		return true;
 	}
 
@@ -332,8 +355,8 @@ class Plugin extends JPlugin
 			return;
 		}
 
-		if (version_compare($plugin['version'], '18.2.10140', '<')
-			|| version_compare($library['version'], '18.2.10140', '<'))
+		if (version_compare($plugin['version'], '20.7.20564', '<')
+			|| version_compare($library['version'], '20.7.20564', '<'))
 		{
 			define('REGULAR_LABS_LIBRARY_INSTALLED', 'outdated');
 
@@ -350,7 +373,7 @@ class Plugin extends JPlugin
 	{
 		// Return if page is not an admin page or the admin login page
 		if (
-			! JFactory::getApplication()->isAdmin()
+			! JFactory::getApplication()->isClient('administrator')
 			|| JFactory::getUser()->get('guest')
 		)
 		{

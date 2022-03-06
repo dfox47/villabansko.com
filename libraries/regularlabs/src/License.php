@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,7 +13,8 @@ namespace RegularLabs\Library;
 
 defined('_JEXEC') or die;
 
-use JText;
+use Joomla\CMS\Language\Text as JText;
+use Joomla\CMS\Layout\LayoutHelper;
 
 /**
  * Class Language
@@ -44,17 +45,20 @@ class License
 			return '';
 		}
 
-		return
-			'<div class="alert alert-default rl_licence">'
-			. JText::sprintf('RL_IS_FREE_VERSION', $name)
-			. '<br>'
-			. JText::_('RL_FOR_MORE_GO_PRO')
-			. '<br>'
-			. '<a href="https://www.regularlabs.com/purchase?ext=' . $alias . '" target="_blank" class="btn btn-small btn-primary">'
-			. ' <span class="icon-basket"></span>'
-			. StringHelper::html_entity_decoder(JText::_('RL_GO_PRO'))
-			. '</a>'
-			. '</div>';
+		$displayData = [
+			'msgList' => [
+				'' => [
+					JText::sprintf('RL_IS_FREE_VERSION', $name),
+					JText::_('RL_FOR_MORE_GO_PRO'),
+					'<a href="https://regularlabs.com/purchase/cart/add/' . $alias . '" target="_blank" class="btn btn-small btn-primary">'
+					. '<span class="icon-basket"></span> '
+					. StringHelper::html_entity_decoder(JText::_('RL_GO_PRO'))
+					. '</a>',
+				],
+			],
+		];
+
+		return LayoutHelper::render('joomla.system.message', $displayData);
 	}
 
 	/**

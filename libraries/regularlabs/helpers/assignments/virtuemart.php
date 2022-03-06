@@ -1,11 +1,11 @@
 <?php
 /**
  * @package         Regular Labs Library
- * @version         18.2.10140
+ * @version         22.2.6887
  * 
  * @author          Peter van Westen <info@regularlabs.com>
- * @link            http://www.regularlabs.com
- * @copyright       Copyright © 2018 Regular Labs All Rights Reserved
+ * @link            http://regularlabs.com
+ * @copyright       Copyright © 2022 Regular Labs All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
  */
 
@@ -13,7 +13,14 @@
 
 defined('_JEXEC') or die;
 
-require_once dirname(__DIR__) . '/assignment.php';
+use Joomla\CMS\Factory as JFactory;
+
+if (is_file(JPATH_LIBRARIES . '/regularlabs/autoload.php'))
+{
+	require_once JPATH_LIBRARIES . '/regularlabs/autoload.php';
+}
+
+require_once dirname(__FILE__, 2) . '/assignment.php';
 
 class RLAssignmentsVirtueMart extends RLAssignment
 {
@@ -22,17 +29,9 @@ class RLAssignmentsVirtueMart extends RLAssignment
 		$virtuemart_product_id  = JFactory::getApplication()->input->get('virtuemart_product_id', [], 'array');
 		$virtuemart_category_id = JFactory::getApplication()->input->get('virtuemart_category_id', [], 'array');
 
-		$this->request->item_id     = isset($virtuemart_product_id[0]) ? $virtuemart_product_id[0] : null;
-		$this->request->category_id = isset($virtuemart_category_id[0]) ? $virtuemart_category_id[0] : null;
+		$this->request->item_id     = $virtuemart_product_id[0] ?? null;
+		$this->request->category_id = $virtuemart_category_id[0] ?? null;
 		$this->request->id          = ($this->request->item_id) ? $this->request->item_id : $this->request->category_id;
-	}
-
-	public function passPageTypes()
-	{
-		// Because VM sucks, we have to get the view again
-		$this->request->view = JFactory::getApplication()->input->getString('view');
-
-		return $this->passByPageTypes('com_virtuemart', $this->selection, $this->assignment, true);
 	}
 
 	public function passCategories()
@@ -115,6 +114,19 @@ class RLAssignmentsVirtueMart extends RLAssignment
 		return $this->passSimple($cats);
 	}
 
+	private function getCatParentIds($id = 0)
+	{
+		return $this->getParentIds($id, 'virtuemart_category_categories', 'category_parent_id', 'category_child_id');
+	}
+
+	public function passPageTypes()
+	{
+		// Because VM sucks, we have to get the view again
+		$this->request->view = JFactory::getApplication()->input->getString('view');
+
+		return $this->passByPageTypes('com_virtuemart', $this->selection, $this->assignment, true);
+	}
+
 	public function passProducts()
 	{
 		// Because VM sucks, we have to get the view again
@@ -126,10 +138,5 @@ class RLAssignmentsVirtueMart extends RLAssignment
 		}
 
 		return $this->passSimple($this->request->id);
-	}
-
-	private function getCatParentIds($id = 0)
-	{
-		return $this->getParentIds($id, 'virtuemart_category_categories', 'category_parent_id', 'category_child_id');
 	}
 }
