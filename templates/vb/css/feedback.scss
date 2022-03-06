@@ -1,0 +1,185 @@
+
+
+
+.feedback {
+	margin: 0 auto;
+	max-width: 450px;
+	position: relative;
+	width: 100%;
+
+	form {
+		overflow: hidden;
+	}
+}
+
+.feedback2 {
+	margin: 0 auto;
+	max-width: 420px;
+}
+
+.feedback_field {
+	margin: 0 0 2.5em;
+	position: relative;
+	text-align: center;
+
+	input {
+		background-color: $c_grey_input_bg;
+		color: #000;
+		letter-spacing: .25em;
+		text-align: center;
+		text-transform: uppercase;
+		width: 100%;
+	}
+
+	textarea {
+		background-color: $c_grey_input_bg;
+		color: #000;
+		height: 10em;
+		letter-spacing: .25em;
+		text-align: center;
+		text-transform: uppercase;
+		width: 100%;
+	}
+}
+
+.feedback_field_date {
+	font-size: 0;
+
+	input {
+		display: inline-block;
+		font-size: 14px;
+		margin: 0 0 1.8em;
+		width: 48%;
+
+		&:first-child {
+			margin-right: 4%;
+		}
+	}
+}
+
+.feedback_input_send {
+	font-size: 2em;
+	letter-spacing: .25em;
+	padding: 1.2em 2em;
+	text-transform: uppercase;
+	width: 100%;
+}
+
+.feedback_select_apts {
+	background-color: $c_grey_input_bg;
+	cursor: pointer;
+	font-size: 1.4em;
+	letter-spacing: 0.25em;
+	padding: 1.4em 2em;
+	text-transform: uppercase;
+
+	.fa {
+		background-color: #000;
+		color: #fff;
+		font-size: 2em;
+		height: 100%;
+		line-height: 2em;
+		padding: 0 0 0 .2em;
+		position: absolute;
+		right: 0;
+		top: 0;
+		width: 2em;
+	}
+}
+
+.feedback_select_apts_choose {
+	color: #000;
+}
+
+.feedback_select_apts_list {
+	cursor: pointer;
+	display: none;
+	font-size: 0;
+	font-family: $font_oranienbaum_reg;
+	left: 0;
+	position: absolute;
+	text-transform: uppercase;
+	top: 100%;
+	width: 100%;
+	z-index: 10;
+
+	&.active {
+		display: block;
+	}
+
+	img {
+		display: inline-block;
+		vertical-align: middle;
+	}
+
+	li {
+		background-color: #fff;
+		border-bottom: 1px solid $c_grey_border;
+		border-left: 1px solid $c_grey_border;
+		border-right: 1px solid $c_grey_border;
+		display: block;
+		padding: 22px;
+		text-align: left;
+		transition: $transition;
+		vertical-align: middle;
+
+		&:first-child {
+			border-top: 1px solid $c_grey_border;
+		}
+
+		&:hover {
+			background-color: $c_grey_border;
+		}
+	}
+}
+
+.feedback_select_apts_list_img {
+	display: inline-block;
+	vertical-align: middle;
+	width: 30%;
+
+	img {
+		width: 100%;
+	}
+}
+
+.feedback_select_apts_title {
+	display: inline-block;
+	font-size: 20px;
+	padding: 0 0 0 1em;
+	text-align: center;
+	vertical-align: middle;
+	width: 70%;
+}
+
+.feedback_send_wrapper {
+	position: relative;
+}
+
+.feedback_status {
+	background-color: $c_pink_text;
+	color: #fff;
+	font-size: 1.6em;
+	height: 100%;
+	left: -9999px;
+	opacity: 0;
+	padding: 1.8em 1.8em 0;
+	position: absolute;
+	text-align: center;
+	text-transform: uppercase;
+	top: 0;
+	transition: opacity .3s ease-in-out;
+	width: 100%;
+
+	&.active {
+		left: 0;
+		opacity: 1;
+	}
+
+	&.feedback_sending,
+	&.feedback_success {
+		background-color: $c_green_bg;
+	}
+}
+
+

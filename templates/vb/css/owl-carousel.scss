@@ -1,0 +1,106 @@
+
+
+.owl-carousel {
+	height: 100%;
+	position: relative;
+
+	&.owl-loaded {
+		display: block;
+	}
+
+	&.owl-loading {
+		opacity: 0;
+		display: block;
+	}
+}
+
+.owl-dot {
+	background-color: rgba(0,0,0,0);
+	border: 1px solid #000;
+	border-radius: 50%;
+	cursor: pointer;
+	display: inline-block;
+	font-size: 10px;
+	height: 1.4em;
+	margin: 0 1.2em;
+	transition: $transition;
+	width: 1.4em;
+
+	&.active {
+		background-color: #000;
+	}
+}
+
+.owl-dots {
+	bottom: 80px;
+	font-size: 0;
+	left: 0;
+	position: absolute;
+	text-align: center;
+	width: 100%;
+	z-index: 100;
+}
+
+.owl-item {
+	height: 100%;
+
+	> div {
+		height: 100%;
+	}
+}
+
+.owl-nav {
+	font-size: 32px;
+
+	> div {
+		cursor: pointer;
+		margin: -1.5em 0 0;
+		padding: 1em .5em;
+		position: absolute;
+		top: 50%;
+		transition: $transition;
+		z-index: 8;
+
+		&.disabled {
+			display: none;
+		}
+	}
+}
+
+.owl-next {
+	right: 2%;
+
+	img {
+		display: block;
+	}
+}
+
+.owl-prev {
+	left: 2%;
+
+	img {
+		display: block;
+	}
+}
+
+.owl-stage {
+	height: 100%;
+
+	&::after {
+		content: ".";
+		display: block;
+		clear: both;
+		visibility: hidden;
+		line-height: 0;
+		height: 0;
+	}
+}
+
+.owl-stage-outer {
+	height: 100%;
+	margin: 0 auto;
+	position: relative;
+	z-index: 7;
+}
+
+
