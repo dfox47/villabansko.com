@@ -50,13 +50,12 @@ $i              = '/images';
 		<h3 class="text-center">Contacts:</h3>
 
 		<p>
-			<a class="bansko_phone" href="tel:+359882744430">+359 (88) 27-444-30</a>
+			<a class="bansko_phone" href="tel:+359876700151">+359 (87) 67-00-151</a>
 		</p>
 
 		<ul class="bansko_messangers">
-			<li><a href="https://api.whatsapp.com/send?phone=359882744430" target="_blank">WhatsApp</a></li>
-			<li><a href="viber://chat/?number=359882744430" target="_blank">Viber</a></li>
-			<li><a href="https://telegram.me/dfoxweb" target="_blank">Telegram</a></li>
+			<li><a href="https://api.whatsapp.com/send?phone=359876700151" target="_blank">WhatsApp</a></li>
+			<li><a href="viber://chat/?number=359876700151" target="_blank">Viber</a></li>
 		</ul>
 	</div>
 </div>

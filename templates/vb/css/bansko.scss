@@ -1,0 +1,69 @@
+
+
+
+.bansko {
+	h1 {
+		margin: 1em 0 2em;
+	}
+
+	h3 {
+		font-size: 30px;
+		margin: 0 0 .1em;
+	}
+}
+
+.bansko_map {
+	border: 0 none;
+	display: block;
+	height: 100vh;
+	margin: 30px auto;
+	min-height: 500px;
+	width: 90%;
+}
+
+.bansko_messangers {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	font-size: 24px;
+	font-weight: 700;
+	justify-content: center;
+	margin: 0 0 100px;
+
+	a,
+	a:visited {
+		color: $c_grey_dark;
+		display: inline-block;
+	}
+
+	li {
+		&::after {
+			background-color: #000;
+			content: "";
+			display: inline-block;
+			height: 20px;
+			margin: 0 1em;
+			opacity: .5;
+			width: 2px;
+		}
+
+		&:last-child {
+			&::after {
+				display: none;
+			}
+		}
+	}
+}
+
+.bansko_phone {
+	color: $c_grey_dark;
+	font-size: 28px;
+	margin: 0 0 1em;
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+
